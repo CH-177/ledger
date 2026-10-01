@@ -1,0 +1,153 @@
+<Page
+    x:Class="Ledger.App.Views.HelpPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <Page.Resources>
+        <CollectionViewSource x:Name="TopicsSource" IsSourceGrouped="True" />
+
+        <DataTemplate x:Key="TopicTemplate" x:DataType="vm:HelpTopicItem">
+            <Grid Padding="0,8" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon Glyph="{x:Bind Glyph}" FontSize="16" VerticalAlignment="Top" Margin="0,2,0,0"
+                          Foreground="{ThemeResource LedgerAccentBrush}" AutomationProperties.AccessibilityView="Raw" />
+                <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock Text="{x:Bind Title}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind Summary}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" MaxLines="2"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BlockTemplate" x:DataType="vm:HelpBlockItem">
+            <Grid>
+                <TextBlock Text="{x:Bind Text}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="Wrap"
+                           Visibility="{x:Bind IsParagraph}" />
+                <TextBlock Text="{x:Bind Text}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" Margin="0,8,0,0"
+                           TextWrapping="Wrap" Visibility="{x:Bind IsHeading}" AutomationProperties.HeadingLevel="Level3" />
+                <Grid ColumnSpacing="10" Visibility="{x:Bind IsBullet}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="•" Style="{StaticResource LedgerBodyStyle}" Foreground="{ThemeResource LedgerTextTertiaryBrush}"
+                               AutomationProperties.AccessibilityView="Raw" />
+                    <TextBlock Grid.Column="1" Text="{x:Bind Text}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="Wrap" />
+                </Grid>
+                <Border Visibility="{x:Bind IsImportant}" Padding="14,10" CornerRadius="6"
+                        Background="{ThemeResource LedgerPeachSoftBrush}">
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE7BA;" FontSize="14" VerticalAlignment="Top" Margin="0,3,0,0"
+                                  Foreground="{ThemeResource LedgerWarningBrush}" AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind Text}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="Wrap" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Padding="{StaticResource LedgerPagePadding}" RowSpacing="20" MaxWidth="{StaticResource LedgerContentMaxWidth}" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Spacing="4">
+                <TextBlock Text="Help" Style="{StaticResource LedgerPageTitleStyle}" AutomationProperties.HeadingLevel="Level1" />
+                <TextBlock Text="What each part of Ledger is for and how it works. Press F1 on any page to jump to its topic."
+                           Style="{StaticResource LedgerSecondaryStyle}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Button Grid.Column="1" VerticalAlignment="Center" Command="{x:Bind ViewModel.StartTourCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE768;" FontSize="14" AutomationProperties.AccessibilityView="Raw" />
+                    <TextBlock Text="Take the welcome tour" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnSpacing="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Topics -->
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBox x:Name="SearchBox" PlaceholderText="Search help" AutomationProperties.Name="Search help"
+                         Text="{x:Bind ViewModel.Query, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Grid.Row="1" Text="No topics match. Try fewer or different words." Style="{StaticResource LedgerSecondaryStyle}"
+                           TextWrapping="Wrap" Visibility="{x:Bind ViewModel.HasNoResults, Mode=OneWay}" AutomationProperties.LiveSetting="Polite" />
+                <ListView x:Name="TopicList" Grid.Row="1" AutomationProperties.Name="Help topics"
+                          ItemsSource="{x:Bind TopicsSource.View, Mode=OneWay}"
+                          ItemTemplate="{StaticResource TopicTemplate}"
+                          SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}"
+                          SelectionMode="Single" Padding="0,0,8,0">
+                    <ListView.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate x:DataType="vm:HelpGroup">
+                                    <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerEyebrowStyle}" AutomationProperties.HeadingLevel="Level2" />
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>
+                </ListView>
+            </Grid>
+
+            <!-- The open topic -->
+            <Border Grid.Column="1" Style="{StaticResource LedgerCardStyle}" Padding="0" VerticalAlignment="Stretch"
+                    Visibility="{x:Bind ViewModel.HasTopic, Mode=OneWay}">
+                <ScrollViewer x:Name="TopicScroller" HorizontalScrollMode="Disabled">
+                    <StackPanel Padding="28,24" Spacing="14">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource LedgerBlueSoftBrush}">
+                                <FontIcon Glyph="{x:Bind ViewModel.Glyph, Mode=OneWay}" FontSize="18" Foreground="{ThemeResource LedgerAccentBrush}"
+                                          AutomationProperties.AccessibilityView="Raw" />
+                            </Border>
+                            <TextBlock Text="{x:Bind ViewModel.Title, Mode=OneWay}" Style="{StaticResource LedgerSectionTitleStyle}"
+                                       VerticalAlignment="Center" TextWrapping="Wrap" AutomationProperties.HeadingLevel="Level2" />
+                        </StackPanel>
+                        <TextBlock Text="{x:Bind ViewModel.Summary, Mode=OneWay}" Style="{StaticResource LedgerSecondaryStyle}" TextWrapping="Wrap" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Blocks}" ItemTemplate="{StaticResource BlockTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="10" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <Button Content="{x:Bind ViewModel.OpenPageText, Mode=OneWay}" Command="{x:Bind ViewModel.OpenPageCommand}"
+                                Style="{StaticResource AccentButtonStyle}" Margin="0,6,0,0"
+                                Visibility="{x:Bind ViewModel.HasPage, Mode=OneWay}" />
+                        <StackPanel Spacing="2" Margin="0,6,0,0" Visibility="{x:Bind ViewModel.HasRelated, Mode=OneWay}">
+                            <TextBlock Text="See also" Style="{StaticResource LedgerEyebrowStyle}" AutomationProperties.HeadingLevel="Level3" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Related}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:HelpLinkItem">
+                                        <HyperlinkButton Content="{x:Bind Title}" Tag="{x:Bind Id}" Padding="0,4" Click="OnRelatedClick" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

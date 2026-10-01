@@ -1,0 +1,73 @@
+<ContentDialog
+    x:Class="Ledger.App.Views.Dialogs.PasteScheduleDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ledger.App.ViewModels"
+    Title="Paste your schedule"
+    PrimaryButtonText="{x:Bind ViewModel.SaveText, Mode=OneWay}"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.HasShifts, Mode=OneWay}"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    PrimaryButtonClick="OnSaveClick">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
+    </ContentDialog.Resources>
+
+    <ScrollViewer Width="500" MaxHeight="620" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12" Padding="0,0,16,0">
+            <TextBlock Style="{StaticResource LedgerSecondaryStyle}"
+                       Text="Copy the shifts from your employer's app and paste them here. Dates with hours (like &quot;Oct 2nd: 6hrs&quot;) or times (like &quot;Tue 9/29 4:00 PM - 8:00 PM&quot;) both work." />
+            <ComboBox Header="Job" HorizontalAlignment="Stretch" Visibility="{x:Bind ViewModel.HasSeveralJobs}"
+                      ItemsSource="{x:Bind ViewModel.JobOptions}" DisplayMemberPath="Label"
+                      SelectedIndex="{x:Bind ViewModel.JobIndex, Mode=TwoWay}" />
+            <TextBox x:Name="PasteBox" Header="Schedule" AcceptsReturn="True" TextWrapping="Wrap" Height="140"
+                     PlaceholderText="29th: 4hrs, 30th: 4hrs, Oct. 2nd: 6hrs"
+                     Text="{x:Bind ViewModel.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+            <TextBlock Text="PREVIEW" Style="{StaticResource LedgerEyebrowStyle}" Margin="0,6,0,0" />
+            <TextBlock Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}"
+                       AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{x:Bind ViewModel.BreakRuleText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" />
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Preview}" IsTabStop="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PastePreviewRow">
+                        <Grid ColumnSpacing="12" Padding="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{x:Bind DateText}" Style="{StaticResource LedgerBodyStyle}" />
+                            <TextBlock Grid.Column="1" Text="{x:Bind HoursText}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="2" Text="{x:Bind Detail}" Style="{StaticResource LedgerCaptionStyle}" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.HasProblems, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE7BA;" FontSize="14" Foreground="{ThemeResource LedgerWarningBrush}" />
+                    <TextBlock Text="Couldn't read these lines, so they won't be added:" Style="{StaticResource LedgerBodyStyle}" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Problems}" IsTabStop="False" Margin="22,0,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{x:Bind}" Style="{StaticResource LedgerCaptionStyle}" FontStyle="Italic" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <TextBlock Style="{StaticResource LedgerCaptionStyle}"
+                       Text="Scheduled shifts already saved on these dates are replaced, so pasting an updated schedule never duplicates. Shifts marked as worked are kept." />
+
+            <StackPanel Orientation="Horizontal" Spacing="8" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}">
+                <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="{ThemeResource LedgerNegativeBrush}" VerticalAlignment="Top" Margin="0,3,0,0" />
+                <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}"
+                           Foreground="{ThemeResource LedgerNegativeBrush}" MaxWidth="440" AutomationProperties.LiveSetting="Assertive" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

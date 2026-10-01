@@ -1,0 +1,211 @@
+<Page
+    x:Class="Ledger.App.Views.PlanPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <!-- The page column fills the width up to LedgerContentMaxWidth, left-aligned (see ImportPage). -->
+    <ScrollViewer HorizontalScrollMode="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="{StaticResource LedgerContentMaxWidth}" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Style="{StaticResource LedgerPageContentStyle}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="What if?" Style="{StaticResource LedgerPageTitleStyle}" AutomationProperties.HeadingLevel="Level1" />
+                    <TextBlock Style="{StaticResource LedgerSecondaryStyle}" TextWrapping="Wrap"
+                               Text="Try out a purchase, a change in hours or pay, or a new bill, and see what it does to your balance. This is only a what-if: nothing here changes your transactions, bills or goals." />
+                </StackPanel>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                         IsClosable="False" Severity="Warning" Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+                <InfoBar IsOpen="{x:Bind ViewModel.HasMessage, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasMessage, Mode=OneWay}"
+                         IsClosable="False" Severity="Success" Message="{x:Bind ViewModel.Message, Mode=OneWay}" />
+
+                <!-- Can I afford this? -->
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Can I afford this?" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                    <Border Style="{StaticResource LedgerCardStyle}">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Header="Amount" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                                         Text="{x:Bind ViewModel.AffordAmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <CalendarDatePicker Grid.Column="1" Header="On" HorizontalAlignment="Stretch" Date="{x:Bind ViewModel.AffordDate, Mode=TwoWay}" />
+                                <ComboBox Grid.Column="2" Header="From" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.AccountOptions}" DisplayMemberPath="Label"
+                                          SelectedIndex="{x:Bind ViewModel.AffordAccountIndex, Mode=TwoWay}" />
+                                <Button Grid.Column="3" Style="{StaticResource AccentButtonStyle}" Content="Check" VerticalAlignment="Bottom" Click="OnCheckAffordClick" />
+                            </Grid>
+                            <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.HasAffordAnswer, Mode=OneWay}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="{ThemeResource LedgerPositiveBrush}" VerticalAlignment="Top" Margin="0,2,0,0"
+                                          Visibility="{x:Bind ViewModel.AffordYes, Mode=OneWay}" />
+                                <FontIcon Glyph="&#xE7BA;" FontSize="16" Foreground="{ThemeResource LedgerNegativeBrush}" VerticalAlignment="Top" Margin="0,2,0,0"
+                                          Visibility="{x:Bind ViewModel.AffordNo, Mode=OneWay}" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.AffordAnswer, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="Wrap"
+                                           AutomationProperties.LiveSetting="Polite" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Scenario -->
+                <StackPanel Spacing="10">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Try a scenario" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <ComboBox MinWidth="200" PlaceholderText="Open a saved scenario" ItemsSource="{x:Bind ViewModel.SavedOptions}"
+                                      SelectedIndex="{x:Bind ViewModel.SavedIndex, Mode=TwoWay}" AutomationProperties.Name="Saved scenarios" />
+                            <Button Content="Delete" Click="OnDeleteSavedClick" AutomationProperties.Name="Delete the saved scenario" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Style="{StaticResource LedgerCardStyle}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Add a change" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                            <Grid ColumnSpacing="12" RowSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ComboBox Header="What changes" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.KindLabels}"
+                                          SelectedIndex="{x:Bind ViewModel.KindIndex, Mode=TwoWay}" />
+                                <CalendarDatePicker Grid.Column="1" Header="Starting" HorizontalAlignment="Stretch" Date="{x:Bind ViewModel.ChangeDate, Mode=TwoWay}" />
+                                <TextBox Grid.Column="2" Header="{x:Bind ViewModel.AmountLabel, Mode=OneWay}" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                                         Visibility="{x:Bind ViewModel.NeedsAmount, Mode=OneWay}"
+                                         Text="{x:Bind ViewModel.ChangeAmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="2" Header="% of your scheduled hours" Visibility="{x:Bind ViewModel.NeedsPercent, Mode=OneWay}"
+                                         Text="{x:Bind ViewModel.PercentText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="2" Header="Paid hours a week" Visibility="{x:Bind ViewModel.NeedsWeeklyHours, Mode=OneWay}"
+                                         Text="{x:Bind ViewModel.WeeklyHoursText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ComboBox Grid.Column="2" Header="Which one" HorizontalAlignment="Stretch" Visibility="{x:Bind ViewModel.NeedsRule, Mode=OneWay}"
+                                          ItemsSource="{x:Bind ViewModel.RuleOptions}" DisplayMemberPath="Label" SelectedIndex="{x:Bind ViewModel.RuleIndex, Mode=TwoWay}" />
+
+                                <ComboBox Grid.Row="1" Header="Account" HorizontalAlignment="Stretch" Visibility="{x:Bind ViewModel.NeedsAccount, Mode=OneWay}"
+                                          ItemsSource="{x:Bind ViewModel.AccountOptions}" DisplayMemberPath="Label" SelectedIndex="{x:Bind ViewModel.ChangeAccountIndex, Mode=TwoWay}" />
+                                <ComboBox Grid.Row="1" Header="Job" HorizontalAlignment="Stretch" Visibility="{x:Bind ViewModel.NeedsJob, Mode=OneWay}"
+                                          ItemsSource="{x:Bind ViewModel.JobOptions}" DisplayMemberPath="Label" SelectedIndex="{x:Bind ViewModel.ChangeJobIndex, Mode=TwoWay}" />
+                                <ComboBox Grid.Row="1" Grid.Column="1" Header="How often" HorizontalAlignment="Stretch" Visibility="{x:Bind ViewModel.NeedsFrequency, Mode=OneWay}"
+                                          ItemsSource="{x:Bind ViewModel.FrequencyOptions}" SelectedIndex="{x:Bind ViewModel.FrequencyIndex, Mode=TwoWay}" />
+                                <TextBox Grid.Row="1" Grid.Column="2" Header="Name (optional)" PlaceholderText="e.g. Laptop" MaxLength="100"
+                                         Visibility="{x:Bind ViewModel.NeedsName, Mode=OneWay}"
+                                         Text="{x:Bind ViewModel.ChangeName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                            <Button Content="Add to scenario" Click="OnAddChangeClick" />
+
+                            <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.HasChanges, Mode=OneWay}">
+                                <TextBlock Text="This scenario assumes" Style="{StaticResource LedgerEyebrowStyle}" />
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.Changes}" IsTabStop="False">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ScenarioChangeRowViewModel">
+                                            <Grid ColumnSpacing="8" Padding="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{x:Bind Description}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                                <HyperlinkButton Grid.Column="1" Content="Make it real…" Tag="{x:Bind}" Click="OnMakeRealClick"
+                                                                 Visibility="{x:Bind CanMakeReal}" AutomationProperties.Name="{x:Bind MakeRealName}" />
+                                                <HyperlinkButton Grid.Column="2" Content="Remove" Tag="{x:Bind}" Click="OnRemoveChangeClick" AutomationProperties.Name="{x:Bind RemoveName}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Header="Look ahead" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.RangeOptions}"
+                                          SelectedIndex="{x:Bind ViewModel.RangeIndex, Mode=TwoWay}" />
+                                <TextBox Grid.Column="1" Header="Cushion to keep (optional)" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                                         Text="{x:Bind ViewModel.CushionText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="2" Header="Scenario name (to save it)" MaxLength="100" PlaceholderText="e.g. Fewer hours in winter"
+                                         Text="{x:Bind ViewModel.ScenarioName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                                    <Button Content="Save" Click="OnSaveClick" />
+                                    <Button Content="Clear" Click="OnClearClick" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Results -->
+                    <Border Style="{StaticResource LedgerCardStyle}" Visibility="{x:Bind ViewModel.HasResults, Mode=OneWay}">
+                        <StackPanel Spacing="10">
+                            <Grid>
+                                <TextBlock Text="{x:Bind ViewModel.ResultTitle, Mode=OneWay}" Style="{StaticResource LedgerEyebrowStyle}" />
+                                <Border HorizontalAlignment="Right" CornerRadius="4" Padding="6,1" Background="{ThemeResource LedgerLavenderSoftBrush}">
+                                    <TextBlock Text="What-if" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                                </Border>
+                            </Grid>
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="1" Text="As things are" Style="{StaticResource LedgerCaptionStyle}" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="2" Text="With these changes" Style="{StaticResource LedgerCaptionStyle}" FontWeight="SemiBold" />
+                            </Grid>
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Comparison}" IsTabStop="False">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:CompareRowViewModel">
+                                        <Grid ColumnSpacing="16" Padding="0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Label}" Style="{StaticResource LedgerBodyStyle}" />
+                                            <TextBlock Grid.Column="1" Text="{x:Bind Before}" Style="{StaticResource LedgerBodyStyle}" />
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{x:Bind After}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                                                <FontIcon Glyph="&#xE7BA;" FontSize="13" Foreground="{ThemeResource LedgerNegativeBrush}" Visibility="{x:Bind Worse}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.HasGoalImpacts, Mode=OneWay}">
+                                <TextBlock Text="Goals" Style="{StaticResource LedgerEyebrowStyle}" />
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.GoalImpacts}" IsTabStop="False">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <TextBlock Text="{x:Bind}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap"
+                                       Text="Both sides use your balances today, your bills, dated-ahead transactions and paychecks predicted from your shifts. Hours and pay changes are re-priced with taxes and overtime, like real paychecks." />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,22 @@
+<UserControl
+    x:Class="Ledger.App.Controls.EmptyState"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border Style="{StaticResource LedgerCardStyle}" Padding="40,48">
+        <StackPanel HorizontalAlignment="Center" MaxWidth="440" Spacing="8">
+            <Border Width="48" Height="48" CornerRadius="24" HorizontalAlignment="Center"
+                    Background="{ThemeResource LedgerBlueSoftBrush}">
+                <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" FontSize="20"
+                          Foreground="{ThemeResource LedgerAccentBrush}" AutomationProperties.AccessibilityView="Raw" />
+            </Border>
+            <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource LedgerSectionTitleStyle}"
+                       TextAlignment="Center" Margin="0,8,0,0" AutomationProperties.HeadingLevel="Level2" />
+            <TextBlock Text="{x:Bind Message, Mode=OneWay}" Style="{StaticResource LedgerSecondaryStyle}"
+                       TextAlignment="Center" />
+            <Button x:Name="ActionButton" Content="{x:Bind ActionText, Mode=OneWay}" Command="{x:Bind Command, Mode=OneWay}"
+                    Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Center" Margin="0,12,0,0"
+                    Visibility="Collapsed" />
+        </StackPanel>
+    </Border>
+</UserControl>

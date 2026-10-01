@@ -1,0 +1,42 @@
+<ContentDialog
+    x:Class="Ledger.App.Views.Dialogs.CategoryEditorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="{x:Bind ViewModel.Title}"
+    PrimaryButtonText="Save"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind IsNotSaving(ViewModel.IsSaving), Mode=OneWay}"
+    PrimaryButtonClick="OnSaveClick">
+
+    <StackPanel Width="360" Spacing="16">
+        <TextBox x:Name="NameBox"
+                 Header="Name"
+                 PlaceholderText="e.g. Coffee"
+                 MaxLength="100"
+                 Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.IsCreate}">
+            <ComboBox Header="Kind"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{x:Bind ViewModel.Kinds}"
+                      DisplayMemberPath="Name"
+                      SelectedIndex="{x:Bind ViewModel.KindIndex, Mode=TwoWay}" />
+            <TextBlock Text="{x:Bind ViewModel.KindDescription, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" />
+        </StackPanel>
+
+        <ComboBox Header="Group"
+                  HorizontalAlignment="Stretch"
+                  Visibility="{x:Bind ViewModel.IsCreate}"
+                  ItemsSource="{x:Bind ViewModel.GroupOptions}"
+                  DisplayMemberPath="Name"
+                  SelectedIndex="{x:Bind ViewModel.GroupIndex, Mode=TwoWay}" />
+
+        <StackPanel Orientation="Horizontal" Spacing="8" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}">
+            <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="{ThemeResource LedgerNegativeBrush}" VerticalAlignment="Top" Margin="0,3,0,0" />
+            <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}"
+                       Foreground="{ThemeResource LedgerNegativeBrush}" MaxWidth="330"
+                       AutomationProperties.LiveSetting="Assertive" />
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>

@@ -1,0 +1,227 @@
+<Page
+    x:Class="Ledger.App.Views.IncomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Ledger.App.Controls"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <Page.Resources>
+        <CollectionViewSource x:Name="GroupedShifts" IsSourceGrouped="True" Source="{x:Bind ViewModel.ShiftWeeks}" />
+
+        <DataTemplate x:Key="WindowTemplate" x:DataType="vm:IncomeWindowViewModel">
+            <Border Style="{StaticResource LedgerCardStyle}" Padding="20,16">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{x:Bind Title}" Style="{StaticResource LedgerEyebrowStyle}" />
+                    <TextBlock Text="{x:Bind NetText}" Style="{StaticResource LedgerDisplayAmountStyle}" FontSize="28" LineHeight="36" />
+                    <TextBlock Text="{x:Bind GrossText}" Style="{StaticResource LedgerCaptionStyle}" />
+                    <TextBlock Text="{x:Bind Caption}" Style="{StaticResource LedgerCaptionStyle}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="PaycheckTemplate" x:DataType="vm:PaycheckRowViewModel">
+            <Grid Padding="4,10" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center" MinWidth="96">
+                    <TextBlock Text="{x:Bind PayDateText}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" TextWrapping="NoWrap" />
+                    <TextBlock Text="Payday" Style="{StaticResource LedgerCaptionStyle}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{x:Bind JobName}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="NoWrap" />
+                    <TextBlock Text="{x:Bind PeriodText}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="NoWrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Border Visibility="{x:Bind IsPaydayAssumed}" CornerRadius="4" Padding="6,1" Background="{ThemeResource LedgerPeachSoftBrush}">
+                            <TextBlock Text="Payday not confirmed" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                        </Border>
+                        <Border Visibility="{x:Bind IsDue}" CornerRadius="4" Padding="6,1" Background="{ThemeResource LedgerBlueSoftBrush}">
+                            <TextBlock Text="Paid? Record the real amount" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                        </Border>
+                        <Border Visibility="{x:Bind HasPaystub}" CornerRadius="4" Padding="6,1" Background="{ThemeResource LedgerSageSoftBrush}">
+                            <TextBlock Text="{x:Bind PaystubText}" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                        </Border>
+                        <TextBlock Text="{x:Bind RecordedText}" Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind IsRecorded}"
+                                   Foreground="{ThemeResource LedgerPositiveBrush}" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="1">
+                    <TextBlock Text="{x:Bind NetText}" Style="{StaticResource LedgerBodyStyle}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                    <TextBlock Text="{x:Bind GrossText}" Style="{StaticResource LedgerCaptionStyle}" HorizontalAlignment="Right" />
+                    <TextBlock Text="Estimate" Style="{StaticResource LedgerCaptionStyle}" HorizontalAlignment="Right" FontStyle="Italic"
+                               Visibility="{x:Bind IsEstimate}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ShiftTemplate" x:DataType="vm:ShiftRowViewModel">
+            <Grid Padding="4,8" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="64" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind DateText}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{x:Bind HoursText}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="2" Text="{x:Bind DetailText}" Style="{StaticResource LedgerCaptionStyle}" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                <TextBlock Grid.Column="3" Text="{x:Bind StatusText}" Style="{StaticResource LedgerCaptionStyle}" VerticalAlignment="Center" />
+                <Button Grid.Column="4" VerticalAlignment="Center" Padding="8" Background="Transparent" BorderThickness="0"
+                        AutomationProperties.Name="{x:Bind MoreOptionsName}" ToolTipService.ToolTip="More options">
+                    <FontIcon Glyph="&#xE712;" FontSize="16" />
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <MenuFlyoutItem Text="Edit" Tag="{x:Bind}" Click="OnEditShiftClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE70F;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="{x:Bind MarkText}" Tag="{x:Bind}" Click="OnToggleWorkedClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE73E;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Delete" Tag="{x:Bind}" Click="OnDeleteShiftClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE74D;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="JobTemplate" x:DataType="vm:JobRowViewModel">
+            <Grid Padding="0,6" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource LedgerBlueSoftBrush}">
+                    <FontIcon Glyph="&#xE821;" FontSize="16" Foreground="{ThemeResource LedgerAccentBrush}" AutomationProperties.AccessibilityView="Raw" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                    <TextBlock Text="{x:Bind PayText}" Style="{StaticResource LedgerCaptionStyle}" />
+                    <TextBlock Text="{x:Bind BreakText}" Style="{StaticResource LedgerCaptionStyle}" />
+                    <TextBlock Text="{x:Bind TaxText}" Style="{StaticResource LedgerCaptionStyle}" />
+                </StackPanel>
+                <Button Grid.Column="2" Content="Edit" Tag="{x:Bind}" Click="OnEditJobClick" VerticalAlignment="Center"
+                        AutomationProperties.Name="{x:Bind EditName}" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- The page column fills the width up to LedgerContentMaxWidth, left-aligned. The cap lives on
+         the Grid column: a MaxWidth element directly inside a ScrollViewer is mis-centred on wide windows. -->
+    <ScrollViewer HorizontalScrollMode="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="{StaticResource LedgerContentMaxWidth}" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Style="{StaticResource LedgerPageContentStyle}">
+                <Grid>
+                    <TextBlock Text="Income" Style="{StaticResource LedgerPageTitleStyle}" AutomationProperties.HeadingLevel="Level1" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.ShowContent, Mode=OneWay}">
+                        <Button Content="Add shift" Click="OnAddShiftClick" />
+                        <Button Style="{StaticResource AccentButtonStyle}" Click="OnPasteClick" AutomationProperties.Name="Paste schedule">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE77F;" FontSize="14" />
+                                <TextBlock Text="Paste schedule" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}" IsClosable="False" Severity="Warning"
+                         Title="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}">
+                    <InfoBar.ActionButton>
+                        <Button Content="Try Again" Command="{x:Bind ViewModel.LoadCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <controls:EmptyState
+                    Visibility="{x:Bind ViewModel.ShowNoJobs, Mode=OneWay}"
+                    Glyph="&#xE821;"
+                    Title="Predict your paychecks."
+                    Message="Add your job with its pay rate and schedule, then paste the shifts your employer gives you. Ledger estimates each paycheck after taxes."
+                    ActionText="Add job"
+                    Command="{x:Bind AddJobCommand}" />
+
+                <StackPanel Spacing="24" Visibility="{x:Bind ViewModel.ShowContent, Mode=OneWay}">
+                    <!-- Estimated income: always labelled as an estimate, never shown as money you have. -->
+                    <StackPanel Spacing="10">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Estimated take-home pay" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                                <TextBlock Text="{x:Bind ViewModel.CountByExplanation, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <RadioButtons Grid.Column="1" VerticalAlignment="Center" MaxColumns="2"
+                                          AutomationProperties.Name="Count income by"
+                                          SelectedIndex="{x:Bind ViewModel.CountByIndex, Mode=TwoWay}">
+                                <x:String>By payday</x:String>
+                                <x:String>By work date</x:String>
+                            </RadioButtons>
+                        </Grid>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Windows}" ItemTemplate="{StaticResource WindowTemplate}" IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:EqualColumnsPanel Spacing="12" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Spacing="10" Visibility="{x:Bind ViewModel.HasPaychecks, Mode=OneWay}">
+                        <TextBlock Text="Paychecks" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                        <Border Style="{StaticResource LedgerCardStyle}" Padding="12,4">
+                            <ListView ItemsSource="{x:Bind ViewModel.Paychecks}" ItemTemplate="{StaticResource PaycheckTemplate}"
+                                      SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnPaycheckClick"
+                                      AutomationProperties.Name="Paychecks" />
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Shifts" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                        <controls:EmptyState
+                            Visibility="{x:Bind ViewModel.ShowNoShifts, Mode=OneWay}"
+                            Glyph="&#xE787;"
+                            Title="No shifts yet."
+                            Message="Paste the schedule your employer shows you, or add shifts one at a time."
+                            ActionText="Paste schedule"
+                            Command="{x:Bind PasteCommand}" />
+                        <Border Style="{StaticResource LedgerCardStyle}" Padding="12,4,12,12" Visibility="{x:Bind ViewModel.HasShifts, Mode=OneWay}">
+                            <ListView ItemsSource="{x:Bind GroupedShifts.View, Mode=OneWay}" ItemTemplate="{StaticResource ShiftTemplate}"
+                                      SelectionMode="None" AutomationProperties.Name="Shifts">
+                                <ListView.GroupStyle>
+                                    <GroupStyle>
+                                        <GroupStyle.HeaderTemplate>
+                                            <DataTemplate x:DataType="vm:ShiftWeekGroup">
+                                                <TextBlock Text="{x:Bind Header}" Style="{StaticResource LedgerEyebrowStyle}" AutomationProperties.HeadingLevel="Level3" />
+                                            </DataTemplate>
+                                        </GroupStyle.HeaderTemplate>
+                                    </GroupStyle>
+                                </ListView.GroupStyle>
+                            </ListView>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <TextBlock Text="Jobs" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                            <HyperlinkButton Content="Add another job" HorizontalAlignment="Right" Command="{x:Bind AddJobCommand}" />
+                        </Grid>
+                        <Border Style="{StaticResource LedgerCardStyle}" Padding="20,10">
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Jobs}" ItemTemplate="{StaticResource JobTemplate}" IsTabStop="False" />
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

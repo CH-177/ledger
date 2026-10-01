@@ -1,0 +1,63 @@
+<UserControl
+    x:Class="Ledger.App.Views.OnboardingView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Ledger.App.Controls">
+
+    <Grid Background="{ThemeResource LedgerBackgroundBrush}">
+        <Border Style="{StaticResource LedgerCardStyle}" Width="460" Padding="40,40,40,32"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid>
+                <!-- 1. Welcome -->
+                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsWelcome, Mode=OneWay}">
+                    <Border Width="48" Height="48" CornerRadius="12" HorizontalAlignment="Left"
+                            Background="{ThemeResource LedgerAccentBrush}">
+                        <TextBlock Text="L" FontSize="24" FontWeight="Bold" Foreground="{ThemeResource LedgerSurfaceBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="Welcome to Ledger" Style="{StaticResource LedgerPageTitleStyle}" Margin="0,8,0,0"
+                               AutomationProperties.HeadingLevel="Level1" />
+                    <TextBlock Style="{StaticResource LedgerSecondaryStyle}"
+                               Text="Your finances stay on this PC. There's no account to create and nothing is sent anywhere." />
+                    <Button x:Name="ContinueButton" Content="Continue" Style="{StaticResource AccentButtonStyle}"
+                            HorizontalAlignment="Stretch" Margin="0,16,0,0" Command="{x:Bind ViewModel.ContinueCommand}" />
+                </StackPanel>
+
+                <!-- 2. First account -->
+                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsCreateAccount, Mode=OneWay}">
+                    <TextBlock Text="Create your first account" Style="{StaticResource LedgerPageTitleStyle}"
+                               AutomationProperties.HeadingLevel="Level1" />
+                    <TextBlock Style="{StaticResource LedgerSecondaryStyle}"
+                               Text="Start with the account you use most. You can add others any time." />
+                    <controls:AccountForm x:Name="Form" ViewModel="{x:Bind ViewModel.Editor}" ShowDetails="False"
+                                          Margin="0,8,0,0" KeyDown="OnFormKeyDown" />
+                    <Grid Margin="0,16,0,0" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Back" Command="{x:Bind ViewModel.BackCommand}" />
+                        <Button Grid.Column="1" Content="Create Account" Style="{StaticResource AccentButtonStyle}"
+                                HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.CreateAccountCommand}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- 3. Done -->
+                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsReady, Mode=OneWay}">
+                    <Border Width="48" Height="48" CornerRadius="24" HorizontalAlignment="Left"
+                            Background="{ThemeResource LedgerSageSoftBrush}">
+                        <FontIcon Glyph="&#xE73E;" FontSize="20" Foreground="{ThemeResource LedgerPositiveBrush}"
+                                  AutomationProperties.AccessibilityView="Raw" />
+                    </Border>
+                    <TextBlock Text="You're ready." Style="{StaticResource LedgerPageTitleStyle}" Margin="0,8,0,0"
+                               AutomationProperties.HeadingLevel="Level1" />
+                    <TextBlock Style="{StaticResource LedgerSecondaryStyle}"
+                               Text="A two-minute tour shows where everything is and the few things that matter most. You can replay it any time from Help." />
+                    <Button x:Name="OpenButton" Content="Take the tour" Style="{StaticResource AccentButtonStyle}"
+                            HorizontalAlignment="Stretch" Margin="0,16,0,0" Command="{x:Bind ViewModel.FinishWithTourCommand}" />
+                    <Button x:Name="SkipTourButton" Content="Skip the tour" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.FinishCommand}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

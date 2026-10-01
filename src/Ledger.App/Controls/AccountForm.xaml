@@ -1,0 +1,51 @@
+<UserControl
+    x:Class="Ledger.App.Controls.AccountForm"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Spacing="16">
+        <TextBox x:Name="NameBox"
+                 Header="Account name"
+                 PlaceholderText="e.g. Everyday Checking"
+                 MaxLength="100"
+                 Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <ComboBox Header="Type"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{x:Bind ViewModel.Types}"
+                  DisplayMemberPath="Name"
+                  SelectedIndex="{x:Bind ViewModel.SelectedTypeIndex, Mode=TwoWay}" />
+
+        <StackPanel Spacing="4">
+            <TextBox x:Name="BalanceBox"
+                     Header="{x:Bind ViewModel.StartingBalanceLabel, Mode=OneWay}"
+                     PlaceholderText="$0.00"
+                     InputScope="CurrencyAmount"
+                     Text="{x:Bind ViewModel.StartingBalanceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Text="{x:Bind ViewModel.StartingBalanceHelp, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" MaxWidth="360" HorizontalAlignment="Left" />
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <CalendarDatePicker Header="Balance date" HorizontalAlignment="Stretch" PlaceholderText="Before all transactions"
+                                Date="{x:Bind ViewModel.BalanceDate, Mode=TwoWay}" />
+            <TextBlock Text="{x:Bind ViewModel.BalanceDateHelp}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" MaxWidth="360" HorizontalAlignment="Left" />
+        </StackPanel>
+
+        <StackPanel Spacing="16" Visibility="{x:Bind ShowDetails, Mode=OneWay}">
+            <TextBox Header="Bank or institution (optional)"
+                     PlaceholderText="e.g. Credit Union"
+                     MaxLength="100"
+                     Text="{x:Bind ViewModel.InstitutionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <CheckBox Content="Include in net worth"
+                      IsChecked="{x:Bind ViewModel.IsIncludedInNetWorth, Mode=TwoWay}" />
+        </StackPanel>
+
+        <!-- Errors pair an icon and text with colour, so meaning never depends on colour alone. -->
+        <StackPanel Orientation="Horizontal" Spacing="8" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}">
+            <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="{ThemeResource LedgerNegativeBrush}" VerticalAlignment="Top" Margin="0,3,0,0" />
+            <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}"
+                       Foreground="{ThemeResource LedgerNegativeBrush}" MaxWidth="360"
+                       AutomationProperties.LiveSetting="Assertive" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

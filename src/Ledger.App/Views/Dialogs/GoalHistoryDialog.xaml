@@ -1,0 +1,41 @@
+<ContentDialog
+    x:Class="Ledger.App.Views.Dialogs.GoalHistoryDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ledger.App.ViewModels"
+    Title="{x:Bind ViewModel.Title}"
+    CloseButtonText="Done"
+    DefaultButton="Close">
+
+    <ScrollViewer Width="420" MaxHeight="420" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="10" Padding="0,0,12,0">
+            <TextBlock Text="{x:Bind ViewModel.StartingText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" />
+            <TextBlock Text="Nothing added yet." Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}" />
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Rows}" IsTabStop="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:GoalContributionRowViewModel">
+                        <Grid Padding="0,6" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{x:Bind DateText}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{x:Bind NoteText}" Style="{StaticResource LedgerCaptionStyle}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="2" Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" />
+                            <Button Grid.Column="3" Padding="8" Background="Transparent" BorderThickness="0" Tag="{x:Bind}" Click="OnRemoveClick"
+                                    AutomationProperties.Name="{x:Bind RemoveName}" ToolTipService.ToolTip="Remove">
+                                <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                       Style="{StaticResource LedgerBodyStyle}" Foreground="{ThemeResource LedgerNegativeBrush}" TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Assertive" />
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

@@ -1,0 +1,190 @@
+<ContentDialog
+    x:Class="Ledger.App.Views.Dialogs.JobEditorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ledger.App.ViewModels"
+    Title="{x:Bind ViewModel.Title}"
+    PrimaryButtonText="Save"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind IsNotSaving(ViewModel.IsSaving), Mode=OneWay}"
+    PrimaryButtonClick="OnSaveClick">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
+        <Style x:Key="SectionHeader" TargetType="TextBlock" BasedOn="{StaticResource LedgerEyebrowStyle}">
+            <Setter Property="Margin" Value="0,10,0,0" />
+        </Style>
+    </ContentDialog.Resources>
+
+    <ScrollViewer Width="500" MaxHeight="620" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="14" Padding="0,0,16,0">
+
+            <TextBlock Text="THE JOB" Style="{StaticResource SectionHeader}" AutomationProperties.HeadingLevel="Level2" />
+            <TextBox x:Name="NameBox" Header="Employer" PlaceholderText="e.g. Riverside Market" MaxLength="100"
+                     Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBox Header="Hourly rate" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                         Text="{x:Bind ViewModel.RateText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <CalendarDatePicker Grid.Column="1" Header="New rate applies from" HorizontalAlignment="Stretch"
+                                    Visibility="{x:Bind ViewModel.IsExisting}"
+                                    Date="{x:Bind ViewModel.RateEffective, Mode=TwoWay}" />
+            </Grid>
+            <CheckBox Content="Paid time and a half for hours over 40 in a week" IsChecked="{x:Bind ViewModel.IsOvertimeEligible, Mode=TwoWay}" />
+
+            <TextBlock Text="BREAKS" Style="{StaticResource SectionHeader}" AutomationProperties.HeadingLevel="Level2" />
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBox Header="Unpaid break (min)" InputScope="Number" PlaceholderText="0"
+                         Text="{x:Bind ViewModel.UnpaidBreakText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="1" Header="On shifts of (hours) or more" InputScope="Number" PlaceholderText="5"
+                         Text="{x:Bind ViewModel.UnpaidAfterHoursText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="2" Header="Paid break (min)" InputScope="Number" PlaceholderText="0"
+                         Text="{x:Bind ViewModel.PaidBreakText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+            <TextBlock Text="{x:Bind ViewModel.BreakExample, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" />
+            <TextBlock Style="{StaticResource LedgerCaptionStyle}"
+                       Text="Shift hours on your schedule are the time you're there; the unpaid break is taken off automatically. Paid breaks don't change your pay." />
+
+            <TextBlock Text="PAY SCHEDULE" Style="{StaticResource SectionHeader}" AutomationProperties.HeadingLevel="Level2" />
+            <ComboBox Header="How often you're paid" HorizontalAlignment="Stretch"
+                      ItemsSource="{x:Bind ViewModel.FrequencyOptions}" DisplayMemberPath="Label"
+                      SelectedIndex="{x:Bind ViewModel.FrequencyIndex, Mode=TwoWay}" />
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox Header="Workweek starts on" HorizontalAlignment="Stretch"
+                          ItemsSource="{x:Bind ViewModel.WeekdayOptions}"
+                          SelectedIndex="{x:Bind ViewModel.WorkweekStartIndex, Mode=TwoWay}" />
+                <CalendarDatePicker Grid.Column="1" Header="A pay period started on" HorizontalAlignment="Stretch"
+                                    Visibility="{x:Bind ViewModel.ShowsAnchor, Mode=OneWay}"
+                                    Date="{x:Bind ViewModel.Anchor, Mode=TwoWay}" />
+            </Grid>
+            <StackPanel Spacing="4">
+                <TextBox Header="Days from the end of a pay period to payday" InputScope="Number" Width="200" HorizontalAlignment="Left"
+                         Text="{x:Bind ViewModel.PaydayOffsetText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="{x:Bind ViewModel.NextPaydayText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" />
+            </StackPanel>
+            <CheckBox Content="I've confirmed my payday from a real paystub" IsChecked="{x:Bind ViewModel.IsPaydayConfirmed, Mode=TwoWay}" />
+
+            <TextBlock Text="WHERE THE MONEY GOES" Style="{StaticResource SectionHeader}" AutomationProperties.HeadingLevel="Level2" />
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox Header="Deposited into" HorizontalAlignment="Stretch"
+                          ItemsSource="{x:Bind ViewModel.AccountOptions}" DisplayMemberPath="Label"
+                          SelectedIndex="{x:Bind ViewModel.AccountIndex, Mode=TwoWay}" />
+                <ComboBox Grid.Column="1" Header="Income category" HorizontalAlignment="Stretch"
+                          ItemsSource="{x:Bind ViewModel.CategoryOptions}" DisplayMemberPath="Label"
+                          SelectedIndex="{x:Bind ViewModel.CategoryIndex, Mode=TwoWay}" />
+            </Grid>
+
+            <TextBlock Text="FEDERAL TAX (YOUR W-4)" Style="{StaticResource SectionHeader}" AutomationProperties.HeadingLevel="Level2" />
+            <ComboBox Header="Filing status (W-4 Step 1c)" HorizontalAlignment="Stretch"
+                      ItemsSource="{x:Bind ViewModel.FilingOptions}" DisplayMemberPath="Label"
+                      SelectedIndex="{x:Bind ViewModel.FilingIndex, Mode=TwoWay}" />
+            <CheckBox Content="Step 2 box checked (multiple jobs, or spouse works)" IsChecked="{x:Bind ViewModel.MultipleJobs, Mode=TwoWay}" />
+            <Expander Header="Other W-4 amounts (Steps 3 and 4)" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="12">
+                    <TextBox Header="Step 3: dependents credit (per year)" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                             Text="{x:Bind ViewModel.DependentsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Step 4(a): other income (per year)" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                             Text="{x:Bind ViewModel.OtherIncomeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Step 4(b): deductions (per year)" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                             Text="{x:Bind ViewModel.DeductionsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Step 4(c): extra withholding (per paycheck)" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                             Text="{x:Bind ViewModel.ExtraWithholdingText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </Expander>
+
+            <TextBlock Text="DEDUCTIONS FROM PAY" Style="{StaticResource SectionHeader}" AutomationProperties.HeadingLevel="Level2" />
+            <TextBlock Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap"
+                       Text="Benefits, retirement or dues your employer takes from each paycheck. Pre-tax ones lower some taxes: health plans lower all of them, a 401(k) only federal. Leave empty if nothing is taken." />
+            <ItemsControl ItemsSource="{x:Bind ViewModel.PaycheckDeductions}" IsTabStop="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DeductionRowViewModel">
+                        <Border BorderBrush="{ThemeResource LedgerBorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,10" Margin="0,0,0,10">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Header="Name" PlaceholderText="e.g. Dental" MaxLength="60"
+                                             Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <ComboBox Grid.Column="1" Header="Kind" HorizontalAlignment="Stretch"
+                                              ItemsSource="{x:Bind vm:DeductionRowViewModel.KindOptions}"
+                                              SelectedIndex="{x:Bind KindIndex, Mode=TwoWay}" />
+                                    <Button Grid.Column="2" VerticalAlignment="Bottom" Padding="8" Tag="{x:Bind}" Click="OnRemoveDeductionClick"
+                                            AutomationProperties.Name="{x:Bind RemoveName, Mode=OneWay}" ToolTipService.ToolTip="Remove">
+                                        <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                                    </Button>
+                                </Grid>
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Header="{x:Bind AmountHeader, Mode=OneWay}" PlaceholderText="$0.00"
+                                             Text="{x:Bind AmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <CheckBox Grid.Column="1" Content="A percentage of pay" VerticalAlignment="Bottom"
+                                              IsChecked="{x:Bind IsPercent, Mode=TwoWay}" Visibility="{x:Bind CanBePercent, Mode=OneWay}" />
+                                </Grid>
+                                <CalendarDatePicker Header="Starts" Visibility="{x:Bind IsNew}" HorizontalAlignment="Left" MinWidth="200"
+                                                    Date="{x:Bind StartDate, Mode=TwoWay}" />
+                                <TextBlock Text="{x:Bind StartedText}" Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind IsExistingRow}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <HyperlinkButton Content="Add a deduction" Padding="0" Command="{x:Bind ViewModel.AddDeductionCommand}" />
+
+            <TextBlock Text="LOCAL TAX (WHERE YOU WORK)" Style="{StaticResource SectionHeader}" AutomationProperties.HeadingLevel="Level2" />
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBox Header="Work municipality" PlaceholderText="e.g. Harrisburg City"
+                         Text="{x:Bind ViewModel.WorkLocation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="1" Header="PSD code" PlaceholderText="optional" MaxLength="6"
+                         Text="{x:Bind ViewModel.WorkPsd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBox Header="Non-resident tax rate (%)" PlaceholderText="e.g. 0.5" InputScope="Number"
+                         Text="{x:Bind ViewModel.WorkEitText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="1" Header="Local services tax (per year)" PlaceholderText="e.g. $52" InputScope="CurrencyAmount"
+                         Text="{x:Bind ViewModel.WorkLstText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+            <TextBlock Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" Text="{x:Bind ViewModel.HomeTaxText}" />
+            <TextBlock Style="{StaticResource LedgerCaptionStyle}"
+                       TextWrapping="Wrap" Text="Look up your work location's non-resident rate and local services tax at munstats.pa.gov. Many places charge $52 a year." />
+            <CheckBox Content="I filed a local services tax exemption (earning under $12,000 there)" IsChecked="{x:Bind ViewModel.IsLstExempt, Mode=TwoWay}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}">
+                <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="{ThemeResource LedgerNegativeBrush}" VerticalAlignment="Top" Margin="0,3,0,0" />
+                <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}"
+                           Foreground="{ThemeResource LedgerNegativeBrush}" MaxWidth="440"
+                           AutomationProperties.LiveSetting="Assertive" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

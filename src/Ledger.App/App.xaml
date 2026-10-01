@@ -1,0 +1,17 @@
+<Application
+    x:Class="Ledger.App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- The colour scheme. ThemeService replaces this entry (matched by its Source) when the scheme changes. -->
+                <ResourceDictionary Source="ms-appx:///Resources/Themes/Schemes/Ledger.xaml" />
+                <ResourceDictionary Source="Resources/Themes/Swatches.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Typography.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Controls.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

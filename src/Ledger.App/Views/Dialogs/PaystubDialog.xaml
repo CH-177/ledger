@@ -1,0 +1,129 @@
+<ContentDialog
+    x:Class="Ledger.App.Views.Dialogs.PaystubDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ledger.App.ViewModels"
+    Title="{x:Bind ViewModel.Title}"
+    PrimaryButtonText="Save paystub"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind IsNotSaving(ViewModel.IsSaving), Mode=OneWay}"
+    PrimaryButtonClick="OnSaveClick">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">760</x:Double>
+    </ContentDialog.Resources>
+
+    <ScrollViewer Width="680" MaxHeight="620" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12" Padding="0,0,14,0">
+            <TextBlock Text="{x:Bind ViewModel.Intro}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <CalendarDatePicker Header="Pay date" HorizontalAlignment="Stretch" Date="{x:Bind ViewModel.PayDate, Mode=TwoWay}" />
+                <CalendarDatePicker Grid.Column="1" Header="Period start" HorizontalAlignment="Stretch" Date="{x:Bind ViewModel.PeriodStart, Mode=TwoWay}" />
+                <CalendarDatePicker Grid.Column="2" Header="Period end" HorizontalAlignment="Stretch" Date="{x:Bind ViewModel.PeriodEnd, Mode=TwoWay}" />
+            </Grid>
+            <Grid ColumnSpacing="12" RowSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBox Header="Paid hours" PlaceholderText="optional" InputScope="Number" Text="{x:Bind ViewModel.HoursText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="1" Header="Gross pay" PlaceholderText="$0.00" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.GrossText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="2" Header="Take-home (net) pay" PlaceholderText="$0.00" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.NetText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Row="1" Header="Federal income tax" PlaceholderText="optional" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.FederalText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Row="1" Grid.Column="1" Header="Social Security (OASDI)" PlaceholderText="optional" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.SocialSecurityText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Row="1" Grid.Column="2" Header="Medicare" PlaceholderText="optional" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.MedicareText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Row="2" Header="PA income tax" PlaceholderText="optional" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.StateText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Row="2" Grid.Column="1" Header="PA unemployment (SUI)" PlaceholderText="optional" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.UnemploymentText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Row="2" Grid.Column="2" Header="Local income tax (EIT)" PlaceholderText="optional" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.LocalText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Row="3" Header="Local services tax (LST)" PlaceholderText="optional" InputScope="CurrencyAmount" Text="{x:Bind ViewModel.LstText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+
+            <Rectangle Height="1" Fill="{ThemeResource LedgerBorderBrush}" Margin="0,4" />
+            <TextBlock Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Polite" />
+
+            <StackPanel Visibility="{x:Bind ViewModel.HasComparison, Mode=OneWay}" Spacing="2">
+                <Grid ColumnSpacing="12" Padding="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="110" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="1" Text="Ledger" Style="{StaticResource LedgerEyebrowStyle}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="2" Text="Paystub" Style="{StaticResource LedgerEyebrowStyle}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="3" Text="Difference" Style="{StaticResource LedgerEyebrowStyle}" HorizontalAlignment="Right" />
+                </Grid>
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Lines}" IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:StubLineViewModel">
+                            <Grid ColumnSpacing="12" Padding="0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="110" />
+                                    <ColumnDefinition Width="110" />
+                                    <ColumnDefinition Width="110" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE73E;" FontSize="12" Foreground="{ThemeResource LedgerPositiveBrush}" Visibility="{x:Bind Matches}"
+                                              AutomationProperties.AccessibilityView="Raw" />
+                                    <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="{ThemeResource LedgerWarningBrush}" Visibility="{x:Bind Differs}"
+                                              AutomationProperties.AccessibilityView="Raw" />
+                                    <TextBlock Text="{x:Bind Label}" Style="{StaticResource LedgerBodyStyle}" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{x:Bind LedgerText}" Style="{StaticResource LedgerBodyStyle}" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="2" Text="{x:Bind PaystubText}" Style="{StaticResource LedgerBodyStyle}" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="3" Text="{x:Bind DifferenceText}" Style="{StaticResource LedgerBodyStyle}" HorizontalAlignment="Right"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Hints}" IsTabStop="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Grid ColumnSpacing="8" Padding="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xE82F;" FontSize="14" VerticalAlignment="Top" Margin="0,2,0,0" Foreground="{ThemeResource LedgerAccentBrush}"
+                                      AutomationProperties.AccessibilityView="Raw" />
+                            <TextBlock Grid.Column="1" Text="{x:Bind}" Style="{StaticResource LedgerBodyStyle}" TextWrapping="Wrap" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <CheckBox Visibility="{x:Bind ViewModel.HasPayday, Mode=OneWay}" IsChecked="{x:Bind ViewModel.ConfirmPayday, Mode=TwoWay}">
+                <TextBlock Text="{x:Bind ViewModel.PaydayText, Mode=OneWay}" TextWrapping="Wrap" />
+            </CheckBox>
+
+            <TextBlock Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap"
+                       Text="Saving keeps this paystub with the paycheck. It never changes Ledger's estimate or your transactions." />
+
+            <StackPanel Orientation="Horizontal" Spacing="8" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}">
+                <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="{ThemeResource LedgerNegativeBrush}" VerticalAlignment="Top" Margin="0,3,0,0" />
+                <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}"
+                           Foreground="{ThemeResource LedgerNegativeBrush}" MaxWidth="620" TextWrapping="Wrap"
+                           AutomationProperties.LiveSetting="Assertive" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

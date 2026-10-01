@@ -1,0 +1,191 @@
+<Page
+    x:Class="Ledger.App.Views.TransactionsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Ledger.App.Controls"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="N" Modifiers="Control" Invoked="OnAddAccelerator" />
+        <KeyboardAccelerator Key="F" Modifiers="Control" Invoked="OnSearchAccelerator" />
+    </Page.KeyboardAccelerators>
+
+    <Page.Resources>
+        <CollectionViewSource x:Name="GroupedTransactions" IsSourceGrouped="True" Source="{x:Bind ViewModel.Groups}" />
+
+        <DataTemplate x:Key="TransactionRowTemplate" x:DataType="vm:TransactionRowViewModel">
+            <Grid Padding="4,10" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{x:Bind Title}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" TextWrapping="NoWrap" />
+                    <TextBlock Text="{x:Bind Subtitle}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="NoWrap" />
+                    <TextBlock Text="{x:Bind Memo}" Style="{StaticResource LedgerCaptionStyle}" FontStyle="Italic"
+                               Visibility="{x:Bind HasMemo}" TextWrapping="NoWrap" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="2">
+                    <!-- Money in uses the positive colour AND a "+" sign, so colour is never the only cue. -->
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" FontSize="15" FontWeight="SemiBold"
+                               HorizontalAlignment="Right" TextWrapping="NoWrap"
+                               Foreground="{ThemeResource LedgerPositiveBrush}" Visibility="{x:Bind IsMoneyIn}" />
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" FontSize="15" FontWeight="SemiBold"
+                               HorizontalAlignment="Right" TextWrapping="NoWrap" Visibility="{x:Bind IsNotMoneyIn}" />
+                    <Border Visibility="{x:Bind IsPending}" HorizontalAlignment="Right" CornerRadius="4" Padding="6,1"
+                            Background="{ThemeResource LedgerPeachSoftBrush}">
+                        <TextBlock Text="Pending" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                    </Border>
+                    <Border Visibility="{x:Bind IsAutoRecorded}" HorizontalAlignment="Right" CornerRadius="4" Padding="6,1"
+                            Background="{ThemeResource LedgerLavenderSoftBrush}" ToolTipService.ToolTip="Recorded automatically from a bill on the Bills page">
+                        <TextBlock Text="Automatic" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                    </Border>
+                </StackPanel>
+
+                <Button Grid.Column="2" VerticalAlignment="Center" Padding="8" Background="Transparent" BorderThickness="0"
+                        AutomationProperties.Name="{x:Bind MoreOptionsName}" ToolTipService.ToolTip="More options">
+                    <FontIcon Glyph="&#xE712;" FontSize="16" />
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <MenuFlyoutItem Text="Edit" Tag="{x:Bind}" Click="OnEditClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE70F;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Delete" Tag="{x:Bind}" Click="OnDeleteClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE74D;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- The page column fills the width up to LedgerContentMaxWidth, left-aligned. The cap lives on
+         the Grid column: a MaxWidth element directly inside a ScrollViewer is mis-centred on wide windows. -->
+    <ScrollViewer HorizontalScrollMode="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="{StaticResource LedgerContentMaxWidth}" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Style="{StaticResource LedgerPageContentStyle}" Spacing="18">
+                <Grid>
+                    <TextBlock Text="Transactions" Style="{StaticResource LedgerPageTitleStyle}"
+                               AutomationProperties.HeadingLevel="Level1" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.HasAccounts, Mode=OneWay}">
+                        <Button Click="OnImportClick" AutomationProperties.Name="Import from your bank" ToolTipService.ToolTip="Import a CSV or QFX file from your bank">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8B5;" FontSize="14" />
+                                <TextBlock Text="Import" />
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource AccentButtonStyle}"
+                                AutomationProperties.Name="Add transaction" Click="OnAddClick"
+                                ToolTipService.ToolTip="Add transaction (Ctrl+N)">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE710;" FontSize="14" />
+                                <TextBlock Text="Add transaction" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}" IsClosable="False" Severity="Warning"
+                         Title="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}">
+                    <InfoBar.ActionButton>
+                        <Button Content="Try Again" Command="{x:Bind ViewModel.LoadCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasUndo, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasUndo, Mode=OneWay}" Severity="Informational"
+                         Message="{x:Bind ViewModel.UndoMessage, Mode=OneWay}" Closed="OnUndoClosed">
+                    <InfoBar.ActionButton>
+                        <Button Content="Undo" Command="{x:Bind ViewModel.UndoDeleteCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <!-- Filters -->
+                <StackPanel Spacing="10" Visibility="{x:Bind ViewModel.HasAnyTransactions, Mode=OneWay}">
+                    <TextBox x:Name="SearchBox" PlaceholderText="Search payee, note, category or amount"
+                             AutomationProperties.Name="Search transactions"
+                             Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox HorizontalAlignment="Stretch" AutomationProperties.Name="Date range"
+                                  ItemsSource="{x:Bind ViewModel.DateOptions}"
+                                  SelectedIndex="{x:Bind ViewModel.DateIndex, Mode=TwoWay}" />
+                        <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" AutomationProperties.Name="Account"
+                                  ItemsSource="{x:Bind ViewModel.AccountOptions}" DisplayMemberPath="Label"
+                                  SelectedIndex="{x:Bind ViewModel.AccountIndex, Mode=TwoWay}" />
+                        <ComboBox Grid.Column="2" HorizontalAlignment="Stretch" AutomationProperties.Name="Category"
+                                  ItemsSource="{x:Bind ViewModel.CategoryOptions}" DisplayMemberPath="Label"
+                                  SelectedIndex="{x:Bind ViewModel.CategoryIndex, Mode=TwoWay}" />
+                        <ComboBox Grid.Column="3" HorizontalAlignment="Stretch" AutomationProperties.Name="Type"
+                                  ItemsSource="{x:Bind ViewModel.TypeOptions}" DisplayMemberPath="Label"
+                                  SelectedIndex="{x:Bind ViewModel.TypeIndex, Mode=TwoWay}" />
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Visibility="{x:Bind ViewModel.IsCustomRange, Mode=OneWay}">
+                        <CalendarDatePicker PlaceholderText="From" AutomationProperties.Name="From date"
+                                            Date="{x:Bind ViewModel.CustomFrom, Mode=TwoWay}" />
+                        <CalendarDatePicker PlaceholderText="To" AutomationProperties.Name="To date"
+                                            Date="{x:Bind ViewModel.CustomTo, Mode=TwoWay}" />
+                    </StackPanel>
+                    <TextBlock Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}"
+                               AutomationProperties.LiveSetting="Polite" />
+                </StackPanel>
+
+                <controls:EmptyState
+                    Visibility="{x:Bind ViewModel.ShowFirstTransactionPrompt, Mode=OneWay}"
+                    Glyph="&#xE8FD;"
+                    Title="No transactions yet."
+                    Message="Add your first transaction to start building your financial history."
+                    ActionText="Add transaction"
+                    Command="{x:Bind AddTransactionCommand}" />
+
+                <controls:EmptyState
+                    Visibility="{x:Bind ViewModel.ShowNeedsAccountPrompt, Mode=OneWay}"
+                    Glyph="&#xE825;"
+                    Title="Add an account first."
+                    Message="Transactions are recorded against an account, like checking or a credit card."
+                    ActionText="Go to Accounts"
+                    Command="{x:Bind GoToAccountsCommand}" />
+
+                <controls:EmptyState
+                    Visibility="{x:Bind ViewModel.ShowNoMatches, Mode=OneWay}"
+                    Glyph="&#xE721;"
+                    Title="No transactions match these filters."
+                    Message="Try a different search or date range."
+                    ActionText="Clear filters"
+                    Command="{x:Bind ViewModel.ClearFiltersCommand}" />
+
+                <Border Style="{StaticResource LedgerCardStyle}" Padding="12,4,12,12"
+                        Visibility="{x:Bind ViewModel.ShowList, Mode=OneWay}">
+                    <ListView ItemsSource="{x:Bind GroupedTransactions.View, Mode=OneWay}"
+                              ItemTemplate="{StaticResource TransactionRowTemplate}"
+                              SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnTransactionClick"
+                              AutomationProperties.Name="Transactions">
+                        <ListView.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate x:DataType="vm:TransactionDayGroup">
+                                        <TextBlock Text="{x:Bind Header}" Style="{StaticResource LedgerEyebrowStyle}"
+                                                   AutomationProperties.HeadingLevel="Level2" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
+                    </ListView>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

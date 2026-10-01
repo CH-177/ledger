@@ -1,0 +1,88 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Colour scheme "Terracotta": terracotta, redwood and gold on warm clay-white (dark: redwood brown).
+          Positive  → green
+          Warning   → amber (gold only ever appears as a soft background tint, never as a text colour)
+          Problem   → crimson, pushed toward rose so it never reads as the terracotta accent
+          Accent    → terracotta
+        Same keys as Ledger.xaml; see the notes there.
+    -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="LedgerBackgroundBrush" Color="#F6F0EA" />
+            <SolidColorBrush x:Key="LedgerSurfaceBrush" Color="#FFFBF7" />
+            <SolidColorBrush x:Key="LedgerSurfaceAltBrush" Color="#EEE5DC" />
+            <SolidColorBrush x:Key="LedgerBorderBrush" Color="#E3D6CA" />
+            <SolidColorBrush x:Key="LedgerTextPrimaryBrush" Color="#2E2220" />
+            <SolidColorBrush x:Key="LedgerTextSecondaryBrush" Color="#6A5952" />
+            <SolidColorBrush x:Key="LedgerTextTertiaryBrush" Color="#786760" />
+            <SolidColorBrush x:Key="LedgerPositiveBrush" Color="#3A764B" />
+            <SolidColorBrush x:Key="LedgerWarningBrush" Color="#876000" />
+            <SolidColorBrush x:Key="LedgerNegativeBrush" Color="#B3264C" />
+            <SolidColorBrush x:Key="LedgerAccentBrush" Color="#A34E2E" />
+            <SolidColorBrush x:Key="LedgerSageSoftBrush" Color="#E1EBDB" />
+            <SolidColorBrush x:Key="LedgerBlueSoftBrush" Color="#F3E6C6" />
+            <SolidColorBrush x:Key="LedgerLavenderSoftBrush" Color="#E8E1F0" />
+            <SolidColorBrush x:Key="LedgerPeachSoftBrush" Color="#F6DFD2" />
+            <SolidColorBrush x:Key="LedgerTrackBrush" Color="#E9DED3" />
+
+            <!-- Fluent accent overrides so native controls pick up the terracotta. -->
+            <Color x:Key="SystemAccentColor">#B05A38</Color>
+            <Color x:Key="SystemAccentColorLight1">#C27353</Color>
+            <Color x:Key="SystemAccentColorLight2">#D19274</Color>
+            <Color x:Key="SystemAccentColorLight3">#E2B6A1</Color>
+            <Color x:Key="SystemAccentColorDark1">#A34E2E</Color>
+            <Color x:Key="SystemAccentColorDark2">#843D27</Color>
+            <Color x:Key="SystemAccentColorDark3">#6A3021</Color>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="LedgerBackgroundBrush" Color="#1D1715" />
+            <SolidColorBrush x:Key="LedgerSurfaceBrush" Color="#271F1C" />
+            <SolidColorBrush x:Key="LedgerSurfaceAltBrush" Color="#302724" />
+            <SolidColorBrush x:Key="LedgerBorderBrush" Color="#3E332F" />
+            <SolidColorBrush x:Key="LedgerTextPrimaryBrush" Color="#F1E8E2" />
+            <SolidColorBrush x:Key="LedgerTextSecondaryBrush" Color="#B8AAA2" />
+            <SolidColorBrush x:Key="LedgerTextTertiaryBrush" Color="#9C8E86" />
+            <SolidColorBrush x:Key="LedgerPositiveBrush" Color="#93C49D" />
+            <SolidColorBrush x:Key="LedgerWarningBrush" Color="#E2B864" />
+            <SolidColorBrush x:Key="LedgerNegativeBrush" Color="#F5809A" />
+            <SolidColorBrush x:Key="LedgerAccentBrush" Color="#E3977D" />
+            <SolidColorBrush x:Key="LedgerSageSoftBrush" Color="#263427" />
+            <SolidColorBrush x:Key="LedgerBlueSoftBrush" Color="#3A3120" />
+            <SolidColorBrush x:Key="LedgerLavenderSoftBrush" Color="#302A3B" />
+            <SolidColorBrush x:Key="LedgerPeachSoftBrush" Color="#402B23" />
+            <SolidColorBrush x:Key="LedgerTrackBrush" Color="#372D29" />
+
+            <Color x:Key="SystemAccentColor">#C97A5B</Color>
+            <Color x:Key="SystemAccentColorLight1">#DB9477</Color>
+            <Color x:Key="SystemAccentColorLight2">#E7AE95</Color>
+            <Color x:Key="SystemAccentColorLight3">#EFBDA5</Color>
+            <Color x:Key="SystemAccentColorDark1">#B06548</Color>
+            <Color x:Key="SystemAccentColorDark2">#93543B</Color>
+            <Color x:Key="SystemAccentColorDark3">#76432F</Color>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="LedgerBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerSurfaceAltBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerTextPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerTextSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerTextTertiaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerPositiveBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerWarningBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerNegativeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="LedgerSageSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerBlueSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerLavenderSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerPeachSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerTrackBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

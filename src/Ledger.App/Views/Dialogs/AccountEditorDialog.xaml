@@ -1,0 +1,16 @@
+<ContentDialog
+    x:Class="Ledger.App.Views.Dialogs.AccountEditorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Ledger.App.Controls"
+    Title="{x:Bind ViewModel.Title}"
+    PrimaryButtonText="Save"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind IsNotSaving(ViewModel.IsSaving), Mode=OneWay}"
+    PrimaryButtonClick="OnSaveClick">
+
+    <ScrollViewer Width="380">
+        <controls:AccountForm x:Name="Form" ViewModel="{x:Bind ViewModel}" />
+    </ScrollViewer>
+</ContentDialog>

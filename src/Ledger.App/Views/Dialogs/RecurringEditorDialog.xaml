@@ -1,0 +1,84 @@
+<ContentDialog
+    x:Class="Ledger.App.Views.Dialogs.RecurringEditorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="{x:Bind ViewModel.Title}"
+    PrimaryButtonText="Save"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind IsNotSaving(ViewModel.IsSaving), Mode=OneWay}"
+    PrimaryButtonClick="OnSaveClick">
+
+    <ScrollViewer Width="440" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="14" Padding="0,0,12,0">
+            <RadioButtons MaxColumns="3" AutomationProperties.Name="Kind of recurring item"
+                          SelectedIndex="{x:Bind ViewModel.TypeIndex, Mode=TwoWay}">
+                <x:String>Bill</x:String>
+                <x:String>Income</x:String>
+                <x:String>Transfer</x:String>
+            </RadioButtons>
+
+            <TextBox x:Name="NameBox" Header="Name" MaxLength="100"
+                     PlaceholderText="{x:Bind ViewModel.NamePlaceholder, Mode=OneWay}"
+                     Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+            <StackPanel Spacing="6">
+                <TextBox Header="Amount" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                         Text="{x:Bind ViewModel.AmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <CheckBox Content="{x:Bind ViewModel.EstimateText, Mode=OneWay}" IsChecked="{x:Bind ViewModel.IsAmountEstimated, Mode=TwoWay}" />
+            </StackPanel>
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox Header="Repeats" HorizontalAlignment="Stretch"
+                          ItemsSource="{x:Bind ViewModel.FrequencyOptions}"
+                          SelectedIndex="{x:Bind ViewModel.FrequencyIndex, Mode=TwoWay}" />
+                <CalendarDatePicker Grid.Column="1" Header="First or next date" HorizontalAlignment="Stretch"
+                                    Date="{x:Bind ViewModel.StartDate, Mode=TwoWay}" />
+            </Grid>
+
+            <StackPanel Spacing="6">
+                <CheckBox Content="Stops on a date" IsChecked="{x:Bind ViewModel.HasEndDate, Mode=TwoWay}" />
+                <CalendarDatePicker Header="Last date" HorizontalAlignment="Stretch"
+                                    Visibility="{x:Bind ViewModel.HasEndDate, Mode=OneWay}"
+                                    Date="{x:Bind ViewModel.EndDate, Mode=TwoWay}" />
+            </StackPanel>
+
+            <TextBlock Text="{x:Bind ViewModel.SchedulePreview, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}"
+                       AutomationProperties.LiveSetting="Polite" />
+
+            <ComboBox Header="{x:Bind ViewModel.AccountLabel, Mode=OneWay}" HorizontalAlignment="Stretch"
+                      ItemsSource="{x:Bind ViewModel.AccountOptions}" DisplayMemberPath="Label"
+                      SelectedIndex="{x:Bind ViewModel.AccountIndex, Mode=TwoWay}" />
+
+            <ComboBox Header="To account" HorizontalAlignment="Stretch"
+                      Visibility="{x:Bind ViewModel.IsTransfer, Mode=OneWay}"
+                      ItemsSource="{x:Bind ViewModel.ToAccountOptions}" DisplayMemberPath="Label"
+                      SelectedIndex="{x:Bind ViewModel.ToAccountIndex, Mode=TwoWay}" />
+
+            <ComboBox Header="{x:Bind ViewModel.CategoryLabel, Mode=OneWay}" HorizontalAlignment="Stretch"
+                      ItemsSource="{x:Bind ViewModel.CategoryOptions}" DisplayMemberPath="Label"
+                      SelectedIndex="{x:Bind ViewModel.CategoryIndex, Mode=TwoWay}" />
+
+            <TextBox Header="Note (optional)" MaxLength="1000"
+                     Text="{x:Bind ViewModel.Memo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+            <StackPanel Spacing="4">
+                <CheckBox Content="Record automatically on its due date" IsChecked="{x:Bind ViewModel.AutoRecord, Mode=TwoWay}"
+                          IsEnabled="{x:Bind ViewModel.CanAutoRecord, Mode=OneWay}" />
+                <TextBlock Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" Margin="28,0,0,0"
+                           Text="For fixed-amount autopay like subscriptions. Ledger records it for you from today on, even if the app was closed on the day, and marks it “Automatic”. Otherwise you record each one yourself." />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}">
+                <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="{ThemeResource LedgerNegativeBrush}" VerticalAlignment="Top" Margin="0,3,0,0" />
+                <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}"
+                           Foreground="{ThemeResource LedgerNegativeBrush}" MaxWidth="390" TextWrapping="Wrap"
+                           AutomationProperties.LiveSetting="Assertive" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

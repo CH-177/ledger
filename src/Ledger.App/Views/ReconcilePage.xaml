@@ -1,0 +1,132 @@
+<Page
+    x:Class="Ledger.App.Views.ReconcilePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <Page.Resources>
+        <DataTemplate x:Key="RowTemplate" x:DataType="vm:ReconcileRowViewModel">
+            <Grid Padding="4,8" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="64" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <CheckBox MinWidth="0" VerticalAlignment="Center" IsChecked="{x:Bind IsTicked, Mode=TwoWay}"
+                          AutomationProperties.Name="{x:Bind TickName}" />
+                <TextBlock Grid.Column="1" Text="{x:Bind DateText}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="{x:Bind Title}" Style="{StaticResource LedgerBodyStyle}" TextTrimming="CharacterEllipsis" />
+                    <Border Visibility="{x:Bind HasBadge}" HorizontalAlignment="Left" CornerRadius="4" Padding="6,1"
+                            Background="{ThemeResource LedgerPeachSoftBrush}">
+                        <TextBlock Text="{x:Bind Badge}" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                    </Border>
+                </StackPanel>
+                <Grid Grid.Column="3" VerticalAlignment="Center">
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                               Foreground="{ThemeResource LedgerPositiveBrush}" Visibility="{x:Bind IsMoneyIn}" />
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                               Visibility="{x:Bind IsMoneyOut}" />
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- The page column fills the width up to LedgerContentMaxWidth, left-aligned (see ImportPage). -->
+    <ScrollViewer HorizontalScrollMode="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="{StaticResource LedgerContentMaxWidth}" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Style="{StaticResource LedgerPageContentStyle}">
+                <StackPanel Spacing="2">
+                    <HyperlinkButton Content="‹ Accounts" Padding="0" Click="OnBackClick" />
+                    <TextBlock Text="Reconcile with a statement" Style="{StaticResource LedgerPageTitleStyle}" AutomationProperties.HeadingLevel="Level1" />
+                </StackPanel>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                         IsClosable="False" Severity="Warning" Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+                <InfoBar IsOpen="{x:Bind ViewModel.HasResult, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasResult, Mode=OneWay}"
+                         IsClosable="False" Severity="Success" Message="{x:Bind ViewModel.ResultText, Mode=OneWay}" />
+
+                <Border Style="{StaticResource LedgerCardStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap"
+                                   Text="From your bank or card statement, enter the date it ends and its ending balance. Then tick every transaction that's on it. When the difference is $0.00, Ledger matches the statement." />
+                        <Grid ColumnSpacing="12" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Header="Account" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.AccountOptions}" DisplayMemberPath="Label"
+                                      SelectedIndex="{x:Bind ViewModel.AccountIndex, Mode=TwoWay}" />
+                            <CalendarDatePicker Grid.Column="1" Header="Statement end date" HorizontalAlignment="Stretch"
+                                                Date="{x:Bind ViewModel.StatementDate, Mode=TwoWay}" />
+                            <TextBox Grid.Column="2" Header="{x:Bind ViewModel.BalanceLabel, Mode=OneWay}" PlaceholderText="$0.00" InputScope="CurrencyAmount"
+                                     Text="{x:Bind ViewModel.StatementBalanceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{x:Bind ViewModel.ClearedText, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE73E;" FontSize="14" Foreground="{ThemeResource LedgerPositiveBrush}" Visibility="{x:Bind ViewModel.IsBalanced, Mode=OneWay}" />
+                                <FontIcon Glyph="&#xE7BA;" FontSize="14" Foreground="{ThemeResource LedgerNegativeBrush}" Visibility="{x:Bind ViewModel.IsOff, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind ViewModel.DifferenceText, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold"
+                                           AutomationProperties.LiveSetting="Polite" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.HasHints, Mode=OneWay}">
+                            <TextBlock Text="Where the difference might be" Style="{StaticResource LedgerEyebrowStyle}" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Hints}" IsTabStop="False">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <TextBlock Text="{x:Bind}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                        <Button Style="{StaticResource AccentButtonStyle}" Content="Finish" Click="OnFinishClick" IsEnabled="{x:Bind ViewModel.IsBalanced, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Spacing="10">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="On the statement?" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" VerticalAlignment="Center" />
+                        <HyperlinkButton Grid.Column="1" Content="Tick all" Click="OnTickAllClick" />
+                        <HyperlinkButton Grid.Column="2" Content="Untick all" Click="OnUntickAllClick" />
+                    </Grid>
+                    <TextBlock Text="{x:Bind ViewModel.EmptyText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" />
+                    <Border Style="{StaticResource LedgerCardStyle}" Padding="16,4" Visibility="{x:Bind ViewModel.HasRows, Mode=OneWay}">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Rows}" ItemTemplate="{StaticResource RowTemplate}" IsTabStop="False" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.HasHistory, Mode=OneWay}">
+                    <TextBlock Text="Past statements" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.History}" IsTabStop="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ReconciledStatementViewModel">
+                                <Grid ColumnSpacing="12" Padding="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Bind Text}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                    <Button Grid.Column="1" Content="Undo" Visibility="{x:Bind CanUndo}" Click="OnUndoClick"
+                                            AutomationProperties.Name="Undo the latest reconciliation" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

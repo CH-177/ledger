@@ -1,0 +1,79 @@
+{
+  "_comment": "Payroll tax reference data for tax year 2026. Money in cents, rates as decimals. Sources: docs/plans/income-calculator.md section 8 (IRS Pub 15-T 2026 annual percentage method tables for Forms W-4 2020 or later; SSA wage base; PA Revenue; PA L&I; DCED).",
+  "year": 2026,
+  "federal": {
+    "step1gCents": { "Single": 860000, "MarriedFilingJointly": 1290000, "HeadOfHousehold": 860000 },
+    "standard": {
+      "Single": [
+        { "over": 0, "base": 0, "rate": 0.00 },
+        { "over": 750000, "base": 0, "rate": 0.10 },
+        { "over": 1990000, "base": 124000, "rate": 0.12 },
+        { "over": 5790000, "base": 580000, "rate": 0.22 },
+        { "over": 11320000, "base": 1796600, "rate": 0.24 },
+        { "over": 20927500, "base": 4102400, "rate": 0.32 },
+        { "over": 26372500, "base": 5844800, "rate": 0.35 },
+        { "over": 64810000, "base": 19297925, "rate": 0.37 }
+      ],
+      "MarriedFilingJointly": [
+        { "over": 0, "base": 0, "rate": 0.00 },
+        { "over": 1930000, "base": 0, "rate": 0.10 },
+        { "over": 4410000, "base": 248000, "rate": 0.12 },
+        { "over": 12010000, "base": 1160000, "rate": 0.22 },
+        { "over": 23070000, "base": 3593200, "rate": 0.24 },
+        { "over": 42285000, "base": 8204800, "rate": 0.32 },
+        { "over": 53175000, "base": 11689600, "rate": 0.35 },
+        { "over": 78800000, "base": 20658350, "rate": 0.37 }
+      ],
+      "HeadOfHousehold": [
+        { "over": 0, "base": 0, "rate": 0.00 },
+        { "over": 1555000, "base": 0, "rate": 0.10 },
+        { "over": 3325000, "base": 177000, "rate": 0.12 },
+        { "over": 8300000, "base": 774000, "rate": 0.22 },
+        { "over": 12125000, "base": 1615500, "rate": 0.24 },
+        { "over": 21730000, "base": 3920700, "rate": 0.32 },
+        { "over": 27175000, "base": 5663100, "rate": 0.35 },
+        { "over": 65615000, "base": 19117100, "rate": 0.37 }
+      ]
+    },
+    "step2": {
+      "Single": [
+        { "over": 0, "base": 0, "rate": 0.00 },
+        { "over": 805000, "base": 0, "rate": 0.10 },
+        { "over": 1425000, "base": 62000, "rate": 0.12 },
+        { "over": 3325000, "base": 290000, "rate": 0.22 },
+        { "over": 6090000, "base": 898300, "rate": 0.24 },
+        { "over": 10893800, "base": 2051200, "rate": 0.32 },
+        { "over": 13616300, "base": 2922400, "rate": 0.35 },
+        { "over": 32835000, "base": 9648963, "rate": 0.37 }
+      ],
+      "MarriedFilingJointly": [
+        { "over": 0, "base": 0, "rate": 0.00 },
+        { "over": 1610000, "base": 0, "rate": 0.10 },
+        { "over": 2850000, "base": 124000, "rate": 0.12 },
+        { "over": 6650000, "base": 580000, "rate": 0.22 },
+        { "over": 12180000, "base": 1796600, "rate": 0.24 },
+        { "over": 21787500, "base": 4102400, "rate": 0.32 },
+        { "over": 27232500, "base": 5844800, "rate": 0.35 },
+        { "over": 40045000, "base": 10329175, "rate": 0.37 }
+      ],
+      "HeadOfHousehold": [
+        { "over": 0, "base": 0, "rate": 0.00 },
+        { "over": 1207500, "base": 0, "rate": 0.10 },
+        { "over": 2092500, "base": 88500, "rate": 0.12 },
+        { "over": 4580000, "base": 387000, "rate": 0.22 },
+        { "over": 6492500, "base": 807750, "rate": 0.24 },
+        { "over": 11295000, "base": 1960350, "rate": 0.32 },
+        { "over": 14017500, "base": 2831550, "rate": 0.35 },
+        { "over": 33237500, "base": 9558550, "rate": 0.37 }
+      ]
+    }
+  },
+  "socialSecurity": { "rate": 0.062, "wageBaseCents": 18450000 },
+  "medicare": { "rate": 0.0145, "additionalRate": 0.009, "additionalThresholdCents": 20000000 },
+  "pennsylvania": {
+    "incomeTaxRate": 0.0307,
+    "unemploymentEmployeeRate": 0.0007,
+    "lstAnnualCapCents": 5200,
+    "lstLumpSumMaxCents": 1000
+  }
+}

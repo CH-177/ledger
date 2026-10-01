@@ -1,0 +1,95 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Colour scheme "Ledger" (the default): warm off-white, charcoal, dusty blue, sage.
+        Colour communicates state; most numbers stay neutral.
+          Positive  → muted sage
+          Warning   → muted amber
+          Problem   → muted red
+          Accent    → dusty blue (selection, primary actions)
+        Every brush is defined per theme so it updates live when the theme changes.
+        Always reference these with {ThemeResource}.
+
+        Every scheme in this folder defines exactly the same keys, with Light, Dark and an identical
+        HighContrast dictionary (high contrast always wins over the scheme). ThemeService swaps the
+        active scheme in App.Resources at runtime. The tests in ColorSchemeTests check the keys,
+        the contrast ratios and that HighContrast is unchanged.
+    -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="LedgerBackgroundBrush" Color="#F7F5F0" />
+            <SolidColorBrush x:Key="LedgerSurfaceBrush" Color="#FFFEFB" />
+            <SolidColorBrush x:Key="LedgerSurfaceAltBrush" Color="#EFEDE7" />
+            <SolidColorBrush x:Key="LedgerBorderBrush" Color="#E3E0D8" />
+            <SolidColorBrush x:Key="LedgerTextPrimaryBrush" Color="#26262B" />
+            <SolidColorBrush x:Key="LedgerTextSecondaryBrush" Color="#65646B" />
+            <SolidColorBrush x:Key="LedgerTextTertiaryBrush" Color="#6F6D75" />
+            <SolidColorBrush x:Key="LedgerPositiveBrush" Color="#4A785B" />
+            <SolidColorBrush x:Key="LedgerWarningBrush" Color="#8F6519" />
+            <SolidColorBrush x:Key="LedgerNegativeBrush" Color="#A64B43" />
+            <SolidColorBrush x:Key="LedgerAccentBrush" Color="#52718F" />
+            <SolidColorBrush x:Key="LedgerSageSoftBrush" Color="#E3ECE4" />
+            <SolidColorBrush x:Key="LedgerBlueSoftBrush" Color="#E1E8F0" />
+            <SolidColorBrush x:Key="LedgerLavenderSoftBrush" Color="#E9E5F3" />
+            <SolidColorBrush x:Key="LedgerPeachSoftBrush" Color="#F6E3D5" />
+            <SolidColorBrush x:Key="LedgerTrackBrush" Color="#E6E3DC" />
+
+            <!-- Fluent accent overrides so native controls pick up the dusty blue. -->
+            <Color x:Key="SystemAccentColor">#52718F</Color>
+            <Color x:Key="SystemAccentColorLight1">#6A87A3</Color>
+            <Color x:Key="SystemAccentColorLight2">#859DB6</Color>
+            <Color x:Key="SystemAccentColorLight3">#A3B6C9</Color>
+            <Color x:Key="SystemAccentColorDark1">#46627D</Color>
+            <Color x:Key="SystemAccentColorDark2">#3A526A</Color>
+            <Color x:Key="SystemAccentColorDark3">#2E4256</Color>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="LedgerBackgroundBrush" Color="#1C1B19" />
+            <SolidColorBrush x:Key="LedgerSurfaceBrush" Color="#252422" />
+            <SolidColorBrush x:Key="LedgerSurfaceAltBrush" Color="#2D2C29" />
+            <SolidColorBrush x:Key="LedgerBorderBrush" Color="#393834" />
+            <SolidColorBrush x:Key="LedgerTextPrimaryBrush" Color="#EDEBE6" />
+            <SolidColorBrush x:Key="LedgerTextSecondaryBrush" Color="#ABA9A3" />
+            <SolidColorBrush x:Key="LedgerTextTertiaryBrush" Color="#8F8D87" />
+            <SolidColorBrush x:Key="LedgerPositiveBrush" Color="#8FBA9C" />
+            <SolidColorBrush x:Key="LedgerWarningBrush" Color="#D9AE62" />
+            <SolidColorBrush x:Key="LedgerNegativeBrush" Color="#DD8A81" />
+            <SolidColorBrush x:Key="LedgerAccentBrush" Color="#94B1CE" />
+            <SolidColorBrush x:Key="LedgerSageSoftBrush" Color="#2B3530" />
+            <SolidColorBrush x:Key="LedgerBlueSoftBrush" Color="#29313A" />
+            <SolidColorBrush x:Key="LedgerLavenderSoftBrush" Color="#2F2C38" />
+            <SolidColorBrush x:Key="LedgerPeachSoftBrush" Color="#3A2F28" />
+            <SolidColorBrush x:Key="LedgerTrackBrush" Color="#34332F" />
+
+            <Color x:Key="SystemAccentColor">#6F8FAE</Color>
+            <Color x:Key="SystemAccentColorLight1">#94B1CE</Color>
+            <Color x:Key="SystemAccentColorLight2">#AFC5DB</Color>
+            <Color x:Key="SystemAccentColorLight3">#CAD9E7</Color>
+            <Color x:Key="SystemAccentColorDark1">#5B7A99</Color>
+            <Color x:Key="SystemAccentColorDark2">#4A6580</Color>
+            <Color x:Key="SystemAccentColorDark3">#3A5066</Color>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="LedgerBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerSurfaceAltBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerTextPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerTextSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerTextTertiaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerPositiveBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerWarningBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerNegativeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LedgerAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="LedgerSageSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerBlueSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerLavenderSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerPeachSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LedgerTrackBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

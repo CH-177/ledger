@@ -1,0 +1,101 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <RootNamespace>Ledger.App</RootNamespace>
+    <AssemblyName>Ledger</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\Ledger.ico</ApplicationIcon>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+
+    <!-- Unpackaged, with the Windows App SDK runtime bundled so the app never
+         depends on whichever runtime version happens to be installed. -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnableMsixTooling>true</EnableMsixTooling>
+
+    <!-- English only: skip the 80+ translated resource folders that .NET and WinUI packages ship. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+
+    <!-- Program.cs provides Main (single-instance redirection). -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+  </PropertyGroup>
+
+  <!-- The installed (Release) copy carries no debug symbols. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <CopyDebugSymbolFilesFromPackages>false</CopyDebugSymbolFilesFromPackages>
+
+    <!--
+      Trim unused framework code when publishing (177 MB → ~100 MB). "partial" only trims libraries
+      that declare themselves trim-safe, and the roots below keep everything reached by reflection
+      (XAML type info, MVVM toolkit, EF migrations and models, JSON export/tax tables) whole.
+      Verified by a full click-through of the published build: every page and editor, fresh
+      database, upgrading a 1.3 database, backup, restore + restart, CSV and JSON export.
+      If a future change breaks only the installed copy, check here first.
+    -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <TrimmerRootAssembly Include="Ledger" />
+    <TrimmerRootAssembly Include="Ledger.Core" />
+    <TrimmerRootAssembly Include="CommunityToolkit.Mvvm" />
+    <TrimmerRootAssembly Include="Microsoft.WinUI" />
+    <TrimmerRootAssembly Include="Microsoft.InteractiveExperiences.Projection" />
+    <TrimmerRootAssembly Include="Microsoft.Windows.AppLifecycle.Projection" />
+  </ItemGroup>
+
+  <!-- Let plain `dotnet build` / `dotnet run` work without specifying a platform. -->
+  <PropertyGroup Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'">
+    <Platform>x64</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' != 'ARM64'">win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.Base" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.DWrite" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Runtime" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Regenerate with scripts/make-icon.ps1. Copied so the window can use it at runtime. -->
+    <Content Include="Assets\Ledger.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ledger.Core\Ledger.Core.csproj" />
+  </ItemGroup>
+
+  <!--
+    Publish only what an English, non-debugged install needs:
+    - WinUI's translated resource folders (af-ZA … zh-TW) other than English;
+    - the .NET debugger helper (DiaSymReader), used only when debugging.
+  -->
+  <Target Name="LedgerSlimPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <_LedgerDrop Include="@(ResolvedFileToPublish)"
+                   Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(ResolvedFileToPublish.RelativePath)', '^[a-z]{2,3}(-[A-Za-z]+)+[\\/]')) And !$([System.Text.RegularExpressions.Regex]::IsMatch('%(ResolvedFileToPublish.RelativePath)', '(?i)^en-'))" />
+      <_LedgerDrop Include="@(ResolvedFileToPublish)" Condition="'%(Filename)' == 'Microsoft.DiaSymReader.Native.amd64' Or '%(Filename)' == 'Microsoft.DiaSymReader.Native.arm64'" />
+      <ResolvedFileToPublish Remove="@(_LedgerDrop)" />
+    </ItemGroup>
+  </Target>
+</Project>

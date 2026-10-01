@@ -1,0 +1,134 @@
+<Page
+    x:Class="Ledger.App.Views.GoalsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Ledger.App.Controls"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <Page.Resources>
+        <!-- Calm cards, per the brief: amount, a plain bar, percent, target and a suggestion. No streaks or badges. -->
+        <DataTemplate x:Key="GoalTemplate" x:DataType="vm:GoalCardViewModel">
+            <Border Style="{StaticResource LedgerCardStyle}" Padding="20,16">
+                <StackPanel Spacing="6">
+                    <Grid>
+                        <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" FontSize="16" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,40,0" AutomationProperties.HeadingLevel="Level3" />
+                        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Padding="8" Margin="0,-6,-8,0"
+                                Background="Transparent" BorderThickness="0"
+                                AutomationProperties.Name="{x:Bind MoreOptionsName}" ToolTipService.ToolTip="More options">
+                            <FontIcon Glyph="&#xE712;" FontSize="16" />
+                            <Button.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                    <MenuFlyoutItem Text="Edit" Tag="{x:Bind}" Click="OnEditClick">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE70F;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Take money out" Tag="{x:Bind}" Click="OnTakeOutClick" Visibility="{x:Bind IsManual}">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE738;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="History" Tag="{x:Bind}" Click="OnHistoryClick" Visibility="{x:Bind IsManual}">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE81C;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem Text="{x:Bind ArchiveText}" Tag="{x:Bind}" Click="OnArchiveClick">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE7B8;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Delete" Tag="{x:Bind}" Click="OnDeleteClick">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE74D;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
+                    </Grid>
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" />
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ProgressBar Value="{x:Bind Percent}" Maximum="100" MinHeight="6" VerticalAlignment="Center" CornerRadius="3"
+                                     AutomationProperties.Name="{x:Bind PercentText}" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind PercentText}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                    </Grid>
+                    <TextBlock Text="{x:Bind TargetText}" Style="{StaticResource LedgerCaptionStyle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE73E;" FontSize="12" Foreground="{ThemeResource LedgerPositiveBrush}" Visibility="{x:Bind IsReached}"
+                                  AutomationProperties.AccessibilityView="Raw" />
+                        <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="{ThemeResource LedgerWarningBrush}" Visibility="{x:Bind IsPastDue}"
+                                  AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock Text="{x:Bind SuggestionText}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Grid Margin="0,4,0,0">
+                        <TextBlock Text="{x:Bind TrackingText}" Style="{StaticResource LedgerCaptionStyle}" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,110,0" />
+                        <Button HorizontalAlignment="Right" Content="Add money" Tag="{x:Bind}" Click="OnAddMoneyClick"
+                                Visibility="{x:Bind IsManual}" AutomationProperties.Name="{x:Bind AddName}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- The page column fills the width up to LedgerContentMaxWidth, left-aligned. The cap lives on
+         the Grid column: a MaxWidth element directly inside a ScrollViewer is mis-centred on wide windows. -->
+    <ScrollViewer HorizontalScrollMode="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="{StaticResource LedgerContentMaxWidth}" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Style="{StaticResource LedgerPageContentStyle}">
+                <Grid>
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="Goals" Style="{StaticResource LedgerPageTitleStyle}" AutomationProperties.HeadingLevel="Level1" />
+                        <TextBlock Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" />
+                    </StackPanel>
+                    <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.ShowContent, Mode=OneWay}" Command="{x:Bind AddCommand}"
+                            AutomationProperties.Name="Add goal">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE710;" FontSize="14" />
+                            <TextBlock Text="Add goal" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}" IsClosable="False" Severity="Warning"
+                         Title="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}">
+                    <InfoBar.ActionButton>
+                        <Button Content="Try Again" Command="{x:Bind ViewModel.LoadCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <controls:EmptyState
+                    Visibility="{x:Bind ViewModel.ShowEmpty, Mode=OneWay}"
+                    Glyph="&#xE7C1;"
+                    Title="No savings goals yet."
+                    Message="Create a goal for something you're working toward, like a MacBook or an emergency fund. Ledger shows your progress and a suggested monthly amount."
+                    ActionText="Add goal"
+                    Command="{x:Bind AddCommand}" />
+
+                <StackPanel Spacing="24" Visibility="{x:Bind ViewModel.ShowContent, Mode=OneWay}">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Goals}" ItemTemplate="{StaticResource GoalTemplate}" IsTabStop="False"
+                                  Visibility="{x:Bind ViewModel.HasGoals, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <controls:EqualColumnsPanel Spacing="12" MinColumnWidth="300" MaxColumns="3" StretchFewItems="False" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+
+                    <Expander Header="{x:Bind ViewModel.ArchivedHeader, Mode=OneWay}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                              Visibility="{x:Bind ViewModel.HasArchived, Mode=OneWay}">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Archived}" ItemTemplate="{StaticResource GoalTemplate}" IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:EqualColumnsPanel Spacing="12" MinColumnWidth="300" MaxColumns="3" StretchFewItems="False" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Expander>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,40 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <CornerRadius x:Key="LedgerCardCornerRadius">8</CornerRadius>
+    <Thickness x:Key="LedgerPagePadding">40,28,40,40</Thickness>
+    <x:Double x:Key="LedgerContentMaxWidth">1040</x:Double>
+
+    <!-- A quiet surface for grouping related information. -->
+    <Style x:Key="LedgerCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource LedgerSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource LedgerBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource LedgerCardCornerRadius}" />
+        <Setter Property="Padding" Value="24,20" />
+    </Style>
+
+    <!-- Colour scheme previews in Settings: a strip of equal swatches with a subtle outline. -->
+    <Style x:Key="LedgerSwatchStripStyle" TargetType="Border">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="BorderBrush" Value="{ThemeResource LedgerBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+    </Style>
+    <Style x:Key="LedgerSwatchStyle" TargetType="Rectangle">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="14" />
+    </Style>
+
+    <!--
+        Every page's content column. Its width cap comes from the page's Grid column
+        (ScrollViewer > Grid with a MaxWidth column), never from MaxWidth here: a
+        MaxWidth element directly inside a ScrollViewer is mis-centred on wide windows.
+    -->
+    <Style x:Key="LedgerPageContentStyle" TargetType="StackPanel">
+        <Setter Property="Padding" Value="{StaticResource LedgerPagePadding}" />
+        <Setter Property="Spacing" Value="24" />
+    </Style>
+</ResourceDictionary>

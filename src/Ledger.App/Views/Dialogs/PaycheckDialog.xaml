@@ -1,0 +1,58 @@
+<ContentDialog
+    x:Class="Ledger.App.Views.Dialogs.PaycheckDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Ledger.App.Views.Dialogs"
+    Title="{x:Bind TitleText}"
+    PrimaryButtonText="{x:Bind PrimaryText}"
+    SecondaryButtonText="{x:Bind SecondaryText}"
+    CloseButtonText="Close"
+    DefaultButton="Close">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
+    </ContentDialog.Resources>
+
+    <ScrollViewer Width="480" MaxHeight="620" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12" Padding="0,0,16,0">
+            <Border CornerRadius="4" Padding="8,2" HorizontalAlignment="Left" Background="{ThemeResource LedgerLavenderSoftBrush}">
+                <TextBlock Text="{x:Bind BadgeText}" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+            </Border>
+            <TextBlock Text="{x:Bind PeriodText}" Style="{StaticResource LedgerSecondaryStyle}" />
+
+            <ItemsControl ItemsSource="{x:Bind Rows}" IsTabStop="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:PaycheckDetailRow">
+                        <Grid Padding="0,6" ColumnSpacing="12" BorderThickness="{x:Bind Border}" BorderBrush="{ThemeResource LedgerBorderBrush}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="1">
+                                <TextBlock Text="{x:Bind Label}" Style="{StaticResource LedgerBodyStyle}" FontWeight="{x:Bind Weight}" />
+                                <TextBlock Text="{x:Bind Explanation}" Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind HasExplanation}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{x:Bind Amount}" Style="{StaticResource LedgerBodyStyle}" FontWeight="{x:Bind Weight}"
+                                       VerticalAlignment="Top" HorizontalAlignment="Right" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ItemsControl ItemsSource="{x:Bind Notes}" IsTabStop="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Grid ColumnSpacing="8" Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xE946;" FontSize="12" VerticalAlignment="Top" Margin="0,3,0,0" Foreground="{ThemeResource LedgerTextSecondaryBrush}" />
+                            <TextBlock Grid.Column="1" Text="{x:Bind}" Style="{StaticResource LedgerCaptionStyle}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

@@ -1,0 +1,347 @@
+<Page
+    x:Class="Ledger.App.Views.BillsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Ledger.App.Controls"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <Page.Resources>
+        <!-- Actual money and forecast money never look alike: forecasts carry a "Forecast" tag and
+             italic amounts; the actual balance carries an "Actual" tag. -->
+        <DataTemplate x:Key="CardTemplate" x:DataType="vm:ForecastCardViewModel">
+            <Border Style="{StaticResource LedgerCardStyle}" Padding="20,16">
+                <StackPanel Spacing="2">
+                    <Grid>
+                        <TextBlock Text="{x:Bind Title}" Style="{StaticResource LedgerEyebrowStyle}" />
+                        <Border HorizontalAlignment="Right" CornerRadius="4" Padding="6,1" Visibility="{x:Bind IsActual}"
+                                Background="{ThemeResource LedgerSageSoftBrush}">
+                            <TextBlock Text="Actual" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                        </Border>
+                        <Border HorizontalAlignment="Right" CornerRadius="4" Padding="6,1" Visibility="{x:Bind IsForecast}"
+                                Background="{ThemeResource LedgerLavenderSoftBrush}">
+                            <TextBlock Text="Forecast" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerDisplayAmountStyle}" FontSize="26" LineHeight="34" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="{ThemeResource LedgerWarningBrush}" Visibility="{x:Bind IsWarning}"
+                                  VerticalAlignment="Top" Margin="0,3,6,0" AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind Caption}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DueTemplate" x:DataType="vm:DueRowViewModel">
+            <Grid Padding="4,8" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                    <TextBlock Text="{x:Bind DueText}" Style="{StaticResource LedgerCaptionStyle}" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Content="Record" Tag="{x:Bind}" Click="OnRecordDueClick" AutomationProperties.Name="{x:Bind RecordName}" />
+                    <Button Content="Skip" Tag="{x:Bind}" Click="OnSkipDueClick" AutomationProperties.Name="{x:Bind SkipName}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="RepeatTemplate" x:DataType="vm:RepeatRowViewModel">
+            <Grid Padding="4,8" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                    <TextBlock Text="{x:Bind DetailText}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Content="{x:Bind MakeText}" Tag="{x:Bind}" Click="OnMakeBillClick" AutomationProperties.Name="{x:Bind MakeName}" />
+                    <Button Content="Don't suggest" Tag="{x:Bind}" Click="OnDismissRepeatClick" AutomationProperties.Name="{x:Bind DismissName}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ForecastTemplate" x:DataType="vm:ForecastRowViewModel">
+            <Grid Padding="4,8" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="96" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="112" />
+                    <ColumnDefinition Width="40" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind DateText}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{x:Bind DetailText}" Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind HasDetail}"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Grid Grid.Column="2" VerticalAlignment="Center">
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" FontStyle="Italic" HorizontalAlignment="Right"
+                               Foreground="{ThemeResource LedgerPositiveBrush}" Visibility="{x:Bind IsMoneyIn}" />
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" FontStyle="Italic" HorizontalAlignment="Right"
+                               Visibility="{x:Bind IsMoneyOut}" />
+                </Grid>
+                <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <TextBlock Text="{x:Bind BalanceText}" Style="{StaticResource LedgerCaptionStyle}" FontStyle="Italic" HorizontalAlignment="Right"
+                               Visibility="{x:Bind IsNotBelowZero}" />
+                    <TextBlock Text="{x:Bind BalanceText}" Style="{StaticResource LedgerCaptionStyle}" FontStyle="Italic" HorizontalAlignment="Right"
+                               FontWeight="SemiBold" Foreground="{ThemeResource LedgerNegativeBrush}" Visibility="{x:Bind IsBelowZero}" />
+                    <TextBlock Text="below zero" Style="{StaticResource LedgerCaptionStyle}" HorizontalAlignment="Right"
+                               Foreground="{ThemeResource LedgerNegativeBrush}" Visibility="{x:Bind IsBelowZero}" />
+                </StackPanel>
+                <Button Grid.Column="4" VerticalAlignment="Center" Padding="8" Background="Transparent" BorderThickness="0"
+                        Visibility="{x:Bind IsRecurring}"
+                        AutomationProperties.Name="{x:Bind MoreOptionsName}" ToolTipService.ToolTip="More options">
+                    <FontIcon Glyph="&#xE712;" FontSize="16" />
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <MenuFlyoutItem Text="Record it now" Tag="{x:Bind}" Click="OnRecordForecastClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE73E;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Skip this one" Tag="{x:Bind}" Click="OnSkipForecastClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE893;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Grid.Column="4" VerticalAlignment="Center" Padding="8" Background="Transparent" BorderThickness="0"
+                        Visibility="{x:Bind IsPaycheck}" Click="OnOpenIncomeClick"
+                        AutomationProperties.Name="Open the Income page" ToolTipService.ToolTip="Open the Income page">
+                    <FontIcon Glyph="&#xE8A7;" FontSize="16" />
+                </Button>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="RuleTemplate" x:DataType="vm:RuleRowViewModel">
+            <Grid Padding="0,8" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="40" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                        <Border Visibility="{x:Bind IsPaused}" CornerRadius="4" Padding="6,1" Background="{ThemeResource LedgerPeachSoftBrush}">
+                            <TextBlock Text="Paused" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="{x:Bind ScheduleText}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="1">
+                    <TextBlock Text="{x:Bind AmountText}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                    <TextBlock Text="{x:Bind NextText}" Style="{StaticResource LedgerCaptionStyle}" HorizontalAlignment="Right" />
+                    <TextBlock Text="{x:Bind MonthlyText}" Style="{StaticResource LedgerCaptionStyle}" HorizontalAlignment="Right" />
+                </StackPanel>
+                <Button Grid.Column="2" VerticalAlignment="Center" Padding="8" Background="Transparent" BorderThickness="0"
+                        AutomationProperties.Name="{x:Bind MoreOptionsName}" ToolTipService.ToolTip="More options">
+                    <FontIcon Glyph="&#xE712;" FontSize="16" />
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <MenuFlyoutItem Text="Edit" Tag="{x:Bind}" Click="OnEditRuleClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE70F;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="{x:Bind PauseText}" Tag="{x:Bind}" Click="OnPauseRuleClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE769;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Delete" Tag="{x:Bind}" Click="OnDeleteRuleClick">
+                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE74D;" /></MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- The page column fills the width up to LedgerContentMaxWidth, left-aligned. The cap lives on
+         the Grid column: a MaxWidth element directly inside a ScrollViewer is mis-centred on wide windows. -->
+    <ScrollViewer HorizontalScrollMode="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="{StaticResource LedgerContentMaxWidth}" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Style="{StaticResource LedgerPageContentStyle}">
+                <Grid>
+                    <TextBlock Text="Bills" Style="{StaticResource LedgerPageTitleStyle}" AutomationProperties.HeadingLevel="Level1" />
+                    <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.ShowContent, Mode=OneWay}" Command="{x:Bind AddCommand}"
+                            AutomationProperties.Name="Add recurring">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE710;" FontSize="14" />
+                            <TextBlock Text="Add recurring" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}" IsClosable="False" Severity="Warning"
+                         Title="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}">
+                    <InfoBar.ActionButton>
+                        <Button Content="Try Again" Command="{x:Bind ViewModel.LoadCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <controls:EmptyState
+                    Visibility="{x:Bind ViewModel.ShowNoAccounts, Mode=OneWay}"
+                    Glyph="&#xE8C7;"
+                    Title="Add an account first."
+                    Message="Bills are paid from an account, and the forecast starts from your real balance."
+                    ActionText="Go to Accounts"
+                    Command="{x:Bind GoToAccountsCommand}" />
+
+                <StackPanel Spacing="28" Visibility="{x:Bind ViewModel.ShowContent, Mode=OneWay}">
+
+                    <!-- What Ledger recorded by itself since this was last dismissed. -->
+                    <InfoBar IsOpen="{x:Bind ViewModel.HasAutoRecorded, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasAutoRecorded, Mode=OneWay}" Severity="Success" IsClosable="False"
+                             Title="Recorded automatically" Message="{x:Bind ViewModel.AutoRecordedText, Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <Button Content="OK" Command="{x:Bind ViewModel.DismissAutoRecordCommand}" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+                    <InfoBar IsOpen="{x:Bind ViewModel.HasAutoFailed, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasAutoFailed, Mode=OneWay}" Severity="Warning" IsClosable="False"
+                             Title="Couldn't record automatically" Message="{x:Bind ViewModel.AutoFailedText, Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <Button Content="OK" Command="{x:Bind ViewModel.DismissAutoRecordCommand}" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
+                    <!-- Past occurrences nobody recorded yet. -->
+                    <StackPanel Spacing="10" Visibility="{x:Bind ViewModel.HasDue, Mode=OneWay}">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Needs recording" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                                <TextBlock Text="These came due but nothing was recorded. They stay here until you record or skip them."
+                                           Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="Skip all" VerticalAlignment="Center" Click="OnSkipAllClick" />
+                        </Grid>
+                        <Border Style="{StaticResource LedgerCardStyle}" Padding="16,4">
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Due}" ItemTemplate="{StaticResource DueTemplate}" IsTabStop="False" />
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Forecast -->
+                    <StackPanel Spacing="10">
+                        <!-- Heading on its own line and the pickers beneath, so neither squeezes the other on narrow windows. -->
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Coming up" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                            <TextBlock Text="{x:Bind ViewModel.ForecastCaption, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <ComboBox MinWidth="200" AutomationProperties.Name="Forecast accounts"
+                                      ItemsSource="{x:Bind ViewModel.AccountOptions}" DisplayMemberPath="Label"
+                                      SelectedIndex="{x:Bind ViewModel.AccountIndex, Mode=TwoWay}" />
+                            <ComboBox AutomationProperties.Name="Forecast length"
+                                      ItemsSource="{x:Bind ViewModel.RangeOptions}"
+                                      SelectedIndex="{x:Bind ViewModel.RangeIndex, Mode=TwoWay}" />
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Cards}" ItemTemplate="{StaticResource CardTemplate}" IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:EqualColumnsPanel Spacing="12" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <Border Style="{StaticResource LedgerCardStyle}" Padding="12,4" Visibility="{x:Bind ViewModel.HasForecast, Mode=OneWay}">
+                            <StackPanel>
+                                <Grid Padding="22,10,16,4" ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="96" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="112" />
+                                        <ColumnDefinition Width="40" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Date" Style="{StaticResource LedgerEyebrowStyle}" />
+                                    <TextBlock Grid.Column="1" Text="Expected" Style="{StaticResource LedgerEyebrowStyle}" />
+                                    <TextBlock Grid.Column="2" Text="Amount" Style="{StaticResource LedgerEyebrowStyle}" HorizontalAlignment="Right" />
+                                    <TextBlock Grid.Column="3" Text="Balance after" Style="{StaticResource LedgerEyebrowStyle}" HorizontalAlignment="Right" />
+                                </Grid>
+                                <ListView ItemsSource="{x:Bind ViewModel.Forecast}" ItemTemplate="{StaticResource ForecastTemplate}"
+                                          SelectionMode="None" AutomationProperties.Name="Forecast" />
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="Nothing expected in this period. Add bills and income below to see them here."
+                                   Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind ViewModel.HasNoForecastEvents, Mode=OneWay}" />
+                    </StackPanel>
+
+                    <!-- Repeats Ledger spotted in your history that aren't bills yet. -->
+                    <StackPanel Spacing="10" Visibility="{x:Bind ViewModel.HasRepeats, Mode=OneWay}">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Looks like it repeats" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                            <TextBlock Text="You've entered these on a regular schedule. Make one a bill to see it coming in the forecast. Turn this off in Settings."
+                                       Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Border Style="{StaticResource LedgerCardStyle}" Padding="16,4">
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Repeats}" ItemTemplate="{StaticResource RepeatTemplate}" IsTabStop="False" />
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Rules -->
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <TextBlock Text="Recurring" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                            <HyperlinkButton Content="Add recurring" HorizontalAlignment="Right" Command="{x:Bind AddCommand}"
+                                             Visibility="{x:Bind ViewModel.HasRules, Mode=OneWay}" />
+                        </Grid>
+                        <controls:EmptyState
+                            Visibility="{x:Bind ViewModel.ShowNoRules, Mode=OneWay}"
+                            Glyph="&#xE8EE;"
+                            Title="No bills or recurring income yet."
+                            Message="Add subscriptions, bills and regular income so Ledger can show what's coming next. Paychecks from the Income page are already included."
+                            ActionText="Add recurring"
+                            Command="{x:Bind AddCommand}" />
+
+                        <StackPanel Spacing="16" Visibility="{x:Bind ViewModel.HasRules, Mode=OneWay}">
+                            <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.HasBills, Mode=OneWay}">
+                                <Grid>
+                                    <TextBlock Text="Bills and subscriptions" Style="{StaticResource LedgerEyebrowStyle}" AutomationProperties.HeadingLevel="Level3" />
+                                    <TextBlock Text="{x:Bind ViewModel.BillsCaption, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Border Style="{StaticResource LedgerCardStyle}" Padding="20,6">
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.Bills}" ItemTemplate="{StaticResource RuleTemplate}" IsTabStop="False" />
+                                </Border>
+                            </StackPanel>
+                            <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.HasIncomeRules, Mode=OneWay}">
+                                <Grid>
+                                    <TextBlock Text="Income" Style="{StaticResource LedgerEyebrowStyle}" AutomationProperties.HeadingLevel="Level3" />
+                                    <TextBlock Text="{x:Bind ViewModel.IncomeCaption, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Border Style="{StaticResource LedgerCardStyle}" Padding="20,6">
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.IncomeRules}" ItemTemplate="{StaticResource RuleTemplate}" IsTabStop="False" />
+                                </Border>
+                            </StackPanel>
+                            <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.HasTransfers, Mode=OneWay}">
+                                <TextBlock Text="Transfers" Style="{StaticResource LedgerEyebrowStyle}" AutomationProperties.HeadingLevel="Level3" />
+                                <Border Style="{StaticResource LedgerCardStyle}" Padding="20,6">
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.Transfers}" ItemTemplate="{StaticResource RuleTemplate}" IsTabStop="False" />
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

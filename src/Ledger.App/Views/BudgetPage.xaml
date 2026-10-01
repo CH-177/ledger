@@ -1,0 +1,206 @@
+<Page
+    x:Class="Ledger.App.Views.BudgetPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Ledger.App.Controls"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <Page.Resources>
+        <Style x:Key="BudgetBarStyle" TargetType="ProgressBar">
+            <Setter Property="Minimum" Value="0" />
+            <Setter Property="Maximum" Value="100" />
+            <Setter Property="Height" Value="6" />
+            <Setter Property="MinHeight" Value="6" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Background" Value="{ThemeResource LedgerTrackBrush}" />
+            <Setter Property="IsTabStop" Value="False" />
+        </Style>
+
+        <DataTemplate x:Key="BudgetLineTemplate" x:DataType="vm:BudgetLineViewModel">
+            <Grid Padding="0,14" ColumnSpacing="16" RowSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.RowSpan="2" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Top"
+                        Background="{ThemeResource LedgerBlueSoftBrush}">
+                    <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" FontSize="16" Foreground="{ThemeResource LedgerAccentBrush}"
+                              AutomationProperties.AccessibilityView="Raw" />
+                </Border>
+
+                <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock Text="{x:Bind Name, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" TextWrapping="NoWrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{x:Bind AmountsText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" Foreground="{ThemeResource LedgerTextPrimaryBrush}" />
+                        <!-- Status is always stated in words; colour only reinforces it. -->
+                        <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind IsOnTrack, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind IsNoPlan, Mode=OneWay}"
+                                   Foreground="{ThemeResource LedgerTextTertiaryBrush}" />
+                        <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind IsNear, Mode=OneWay}"
+                                   Foreground="{ThemeResource LedgerWarningBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" Visibility="{x:Bind IsOver, Mode=OneWay}"
+                                   Foreground="{ThemeResource LedgerNegativeBrush}" FontWeight="SemiBold" />
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBox Grid.Column="2" Width="120" TextAlignment="Right" InputScope="CurrencyAmount" PlaceholderText="Plan"
+                         VerticalAlignment="Center"
+                         Visibility="{x:Bind IsEditable, Mode=OneWay}"
+                         Text="{x:Bind PlannedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AutomationProperties.Name="{x:Bind PlanFieldName, Mode=OneWay}"
+                         Tag="{x:Bind}" LostFocus="OnPlanLostFocus" KeyDown="OnPlanKeyDown" />
+
+                <!-- One bar per state so each can carry its own semantic colour. -->
+                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ProgressBar Style="{StaticResource BudgetBarStyle}" Value="{x:Bind Percent, Mode=OneWay}"
+                                 Foreground="{ThemeResource LedgerAccentBrush}" Visibility="{x:Bind IsOnTrack, Mode=OneWay}"
+                                 AutomationProperties.AccessibilityView="Raw" />
+                    <ProgressBar Style="{StaticResource BudgetBarStyle}" Value="{x:Bind Percent, Mode=OneWay}"
+                                 Foreground="{ThemeResource LedgerTextTertiaryBrush}" Visibility="{x:Bind IsNoPlan, Mode=OneWay}"
+                                 AutomationProperties.AccessibilityView="Raw" />
+                    <ProgressBar Style="{StaticResource BudgetBarStyle}" Value="{x:Bind Percent, Mode=OneWay}"
+                                 Foreground="{ThemeResource LedgerWarningBrush}" Visibility="{x:Bind IsNear, Mode=OneWay}"
+                                 AutomationProperties.AccessibilityView="Raw" />
+                    <ProgressBar Style="{StaticResource BudgetBarStyle}" Value="{x:Bind Percent, Mode=OneWay}"
+                                 Foreground="{ThemeResource LedgerNegativeBrush}" Visibility="{x:Bind IsOver, Mode=OneWay}"
+                                 AutomationProperties.AccessibilityView="Raw" />
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- The page column fills the width up to LedgerContentMaxWidth, left-aligned. The cap lives on
+         the Grid column: a MaxWidth element directly inside a ScrollViewer is mis-centred on wide windows. -->
+    <ScrollViewer HorizontalScrollMode="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="{StaticResource LedgerContentMaxWidth}" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Style="{StaticResource LedgerPageContentStyle}">
+                <Grid>
+                    <TextBlock Text="Budget" Style="{StaticResource LedgerPageTitleStyle}" AutomationProperties.HeadingLevel="Level1" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="4">
+                        <HyperlinkButton Content="This month" Command="{x:Bind ViewModel.ThisMonthCommand}"
+                                         Visibility="{x:Bind ViewModel.IsNotCurrentMonth, Mode=OneWay}" Margin="0,0,8,0" />
+                        <Button Command="{x:Bind ViewModel.PreviousMonthCommand}" AutomationProperties.Name="Previous month"
+                                ToolTipService.ToolTip="Previous month" Padding="10,8">
+                            <FontIcon Glyph="&#xE76B;" FontSize="12" />
+                        </Button>
+                        <TextBlock Text="{x:Bind ViewModel.MonthTitle, Mode=OneWay}" Style="{StaticResource LedgerSectionTitleStyle}"
+                                   VerticalAlignment="Center" MinWidth="160" TextAlignment="Center"
+                                   AutomationProperties.LiveSetting="Polite" />
+                        <Button Command="{x:Bind ViewModel.NextMonthCommand}" AutomationProperties.Name="Next month"
+                                ToolTipService.ToolTip="Next month" Padding="10,8">
+                            <FontIcon Glyph="&#xE76C;" FontSize="12" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}" IsClosable="False" Severity="Warning"
+                         Title="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+
+                <!-- Month summary: planned vs actual. -->
+                <Border Style="{StaticResource LedgerCardStyle}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{x:Bind ViewModel.SummaryTitle, Mode=OneWay}" Style="{StaticResource LedgerSectionTitleStyle}"
+                                   AutomationProperties.HeadingLevel="Level2" />
+                        <Grid ColumnSpacing="40">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="PLANNED" Style="{StaticResource LedgerEyebrowStyle}" />
+                                <TextBlock Text="{x:Bind ViewModel.PlannedText, Mode=OneWay}" Style="{StaticResource LedgerDisplayAmountStyle}" FontSize="32" LineHeight="40" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock Text="SPENT" Style="{StaticResource LedgerEyebrowStyle}" />
+                                <TextBlock Text="{x:Bind ViewModel.SpentText, Mode=OneWay}" Style="{StaticResource LedgerDisplayAmountStyle}" FontSize="32" LineHeight="40" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="2">
+                                <TextBlock Text="{x:Bind ViewModel.RemainingLabel, Mode=OneWay}" Style="{StaticResource LedgerEyebrowStyle}" />
+                                <TextBlock Text="{x:Bind ViewModel.RemainingText, Mode=OneWay}" Style="{StaticResource LedgerDisplayAmountStyle}" FontSize="32" LineHeight="40"
+                                           Visibility="{x:Bind ViewModel.IsNotOver, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind ViewModel.RemainingText, Mode=OneWay}" Style="{StaticResource LedgerDisplayAmountStyle}" FontSize="32" LineHeight="40"
+                                           Foreground="{ThemeResource LedgerNegativeBrush}" Visibility="{x:Bind ViewModel.IsOver, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+                        <Grid>
+                            <ProgressBar Style="{StaticResource BudgetBarStyle}" Height="8" Value="{x:Bind ViewModel.Percent, Mode=OneWay}"
+                                         Foreground="{ThemeResource LedgerAccentBrush}" Visibility="{x:Bind ViewModel.IsNotOver, Mode=OneWay}"
+                                         AutomationProperties.AccessibilityView="Raw" />
+                            <ProgressBar Style="{StaticResource BudgetBarStyle}" Height="8" Value="{x:Bind ViewModel.Percent, Mode=OneWay}"
+                                         Foreground="{ThemeResource LedgerNegativeBrush}" Visibility="{x:Bind ViewModel.IsOver, Mode=OneWay}"
+                                         AutomationProperties.AccessibilityView="Raw" />
+                        </Grid>
+                        <TextBlock Style="{StaticResource LedgerCaptionStyle}"
+                                   Text="Spent is your actual spending this month, from your transactions. Income and transfers aren't counted." />
+                    </StackPanel>
+                </Border>
+
+                <!-- No plan yet for this month. -->
+                <Border Style="{StaticResource LedgerCardStyle}" Background="{ThemeResource LedgerBlueSoftBrush}" BorderThickness="0"
+                        Visibility="{x:Bind ViewModel.ShowNoPlanPrompt, Mode=OneWay}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="No plan for this month yet." Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                            <TextBlock Text="Type how much you'd like to spend in each group below. Leave a group blank to skip it."
+                                       Style="{StaticResource LedgerSecondaryStyle}" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Copy last month's plan" VerticalAlignment="Center"
+                                Command="{x:Bind ViewModel.CopyPreviousPlanCommand}"
+                                Visibility="{x:Bind ViewModel.CanCopyPreviousPlan, Mode=OneWay}" />
+                    </Grid>
+                </Border>
+
+                <controls:EmptyState Visibility="{x:Bind ViewModel.ShowNoGroups, Mode=OneWay}"
+                                     Glyph="&#xE9D5;"
+                                     Title="No spending groups to plan."
+                                     Message="Budgets are planned by spending group. Add or restore one in Settings → Categories." />
+
+                <Border Style="{StaticResource LedgerCardStyle}" Padding="20,4">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Lines}" ItemTemplate="{StaticResource BudgetLineTemplate}" IsTabStop="False" />
+                </Border>
+
+                <StackPanel Spacing="10" Visibility="{x:Bind ViewModel.HasFunds, Mode=OneWay}">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="Sinking funds" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                        <TextBlock Text="{x:Bind ViewModel.FundsSummary, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Border Style="{StaticResource LedgerCardStyle}" Padding="20,4">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Funds}" IsTabStop="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FundRowViewModel">
+                                    <Grid Padding="0,10" ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{x:Bind DetailText}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="{x:Bind SetAsideText}" Tag="{x:Bind}" Click="OnSetAsideClick" VerticalAlignment="Center"
+                                                Visibility="{x:Bind CanSetAside}" AutomationProperties.Name="{x:Bind SetAsideName}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

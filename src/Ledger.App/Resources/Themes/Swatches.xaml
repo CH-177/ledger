@@ -1,0 +1,34 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Preview strips for Settings → Appearance → Colour scheme: each scheme's key colours, so people can
+        see a scheme before choosing it. They show the same colours whatever the active scheme or theme,
+        so they live outside the swappable scheme dictionaries (Schemes/*.xaml).
+    -->
+
+    <!-- Ledger: warm off-white, charcoal, dusty blue, sage -->
+    <SolidColorBrush x:Key="LedgerSwatchLedger1Brush" Color="#F7F5F0" />
+    <SolidColorBrush x:Key="LedgerSwatchLedger2Brush" Color="#26262B" />
+    <SolidColorBrush x:Key="LedgerSwatchLedger3Brush" Color="#52718F" />
+    <SolidColorBrush x:Key="LedgerSwatchLedger4Brush" Color="#8FBA9C" />
+
+    <!-- Frost: dusty white, pale frost, frost blue, blue slate -->
+    <SolidColorBrush x:Key="LedgerSwatchFrost1Brush" Color="#F1F4F6" />
+    <SolidColorBrush x:Key="LedgerSwatchFrost2Brush" Color="#B2C8DB" />
+    <SolidColorBrush x:Key="LedgerSwatchFrost3Brush" Color="#4F7899" />
+    <SolidColorBrush x:Key="LedgerSwatchFrost4Brush" Color="#1E2630" />
+
+    <!-- Forest: diorite, forest green, deep forest, berry -->
+    <SolidColorBrush x:Key="LedgerSwatchForest1Brush" Color="#E9E9E4" />
+    <SolidColorBrush x:Key="LedgerSwatchForest2Brush" Color="#3F6B52" />
+    <SolidColorBrush x:Key="LedgerSwatchForest3Brush" Color="#1C2A22" />
+    <SolidColorBrush x:Key="LedgerSwatchForest4Brush" Color="#8A3A5E" />
+
+    <!-- Terracotta: clay white, terracotta, redwood, gold -->
+    <SolidColorBrush x:Key="LedgerSwatchTerracotta1Brush" Color="#F6F0EA" />
+    <SolidColorBrush x:Key="LedgerSwatchTerracotta2Brush" Color="#B05A38" />
+    <SolidColorBrush x:Key="LedgerSwatchTerracotta3Brush" Color="#6E2A22" />
+    <SolidColorBrush x:Key="LedgerSwatchTerracotta4Brush" Color="#C9A04A" />
+</ResourceDictionary>

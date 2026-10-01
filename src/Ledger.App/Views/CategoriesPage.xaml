@@ -1,0 +1,119 @@
+<Page
+    x:Class="Ledger.App.Views.CategoriesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ledger.App.ViewModels">
+
+    <Page.Resources>
+        <!-- A subcategory, indented under its group. -->
+        <DataTemplate x:Key="SubcategoryTemplate" x:DataType="vm:CategoryRowViewModel">
+            <Grid Padding="60,6,0,6" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                <Button Grid.Column="1" Tag="{x:Bind}" Click="OnRowMenuClick" Padding="8" Background="Transparent" BorderThickness="0"
+                        AutomationProperties.Name="{x:Bind MoreOptionsName}" ToolTipService.ToolTip="More options">
+                    <FontIcon Glyph="&#xE712;" FontSize="16" />
+                </Button>
+            </Grid>
+        </DataTemplate>
+
+        <!-- A top-level group and its subcategories. -->
+        <DataTemplate x:Key="GroupTemplate" x:DataType="vm:CategoryRowViewModel">
+            <StackPanel Padding="0,6">
+                <Grid ColumnSpacing="16" Padding="0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource LedgerBlueSoftBrush}">
+                        <FontIcon Glyph="{x:Bind Glyph}" FontSize="16" Foreground="{ThemeResource LedgerAccentBrush}"
+                                  AutomationProperties.AccessibilityView="Raw" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="{x:Bind Name}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" TextWrapping="NoWrap" />
+                        <TextBlock Text="{x:Bind Caption}" Style="{StaticResource LedgerCaptionStyle}" />
+                    </StackPanel>
+                    <Button Grid.Column="2" Tag="{x:Bind}" Click="OnRowMenuClick" Padding="8" Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="{x:Bind MoreOptionsName}" ToolTipService.ToolTip="More options">
+                        <FontIcon Glyph="&#xE712;" FontSize="16" />
+                    </Button>
+                </Grid>
+                <ItemsControl ItemsSource="{x:Bind Children}" ItemTemplate="{StaticResource SubcategoryTemplate}" IsTabStop="False" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SectionTemplate" x:DataType="vm:CategorySectionViewModel">
+            <StackPanel Spacing="10" Margin="0,0,0,24">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{x:Bind Title}" Style="{StaticResource LedgerSectionTitleStyle}" AutomationProperties.HeadingLevel="Level2" />
+                    <TextBlock Text="{x:Bind Description}" Style="{StaticResource LedgerCaptionStyle}" />
+                </StackPanel>
+                <Border Style="{StaticResource LedgerCardStyle}" Padding="20,10">
+                    <ItemsControl ItemsSource="{x:Bind Groups}" ItemTemplate="{StaticResource GroupTemplate}" IsTabStop="False" />
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ArchivedTemplate" x:DataType="vm:CategoryRowViewModel">
+            <Grid Padding="4,8" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind FullName}" Style="{StaticResource LedgerBodyStyle}" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                <Button Grid.Column="1" Content="Restore" Tag="{x:Bind}" Click="OnRestoreClick"
+                        AutomationProperties.Name="{x:Bind FullName, Mode=OneTime}" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- The page column fills the width up to LedgerContentMaxWidth, left-aligned. The cap lives on
+         the Grid column: a MaxWidth element directly inside a ScrollViewer is mis-centred on wide windows. -->
+    <ScrollViewer HorizontalScrollMode="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="{StaticResource LedgerContentMaxWidth}" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Style="{StaticResource LedgerPageContentStyle}">
+                <StackPanel Spacing="4">
+                    <HyperlinkButton Click="OnBackClick" Padding="0" AutomationProperties.Name="Back to Settings">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE76B;" FontSize="12" />
+                            <TextBlock Text="Settings" />
+                        </StackPanel>
+                    </HyperlinkButton>
+                    <Grid>
+                        <TextBlock Text="Categories" Style="{StaticResource LedgerPageTitleStyle}"
+                                   AutomationProperties.HeadingLevel="Level1" />
+                        <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource AccentButtonStyle}"
+                                AutomationProperties.Name="Add category" Click="OnAddClick">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE710;" FontSize="14" />
+                                <TextBlock Text="Add category" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <TextBlock Style="{StaticResource LedgerSecondaryStyle}" Margin="0,4,0,0"
+                               Text="Archiving hides a category when you add new transactions. Past transactions keep it." />
+                </StackPanel>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}" IsClosable="False" Severity="Warning"
+                         Title="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Sections}" ItemTemplate="{StaticResource SectionTemplate}" IsTabStop="False" />
+
+                <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                          Header="Archived categories"
+                          Visibility="{x:Bind ViewModel.HasArchived, Mode=OneWay}">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Archived}" ItemTemplate="{StaticResource ArchivedTemplate}" IsTabStop="False" />
+                </Expander>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

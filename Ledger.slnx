@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Ledger.App/Ledger.App.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/Ledger.Core/Ledger.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ledger.Core.Tests/Ledger.Core.Tests.csproj" />
+  </Folder>
+</Solution>
