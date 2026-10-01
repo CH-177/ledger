@@ -14,6 +14,8 @@ First public release on GitHub.
 - The 3.0.0 `HomeTaxDefault` upgrade step no longer writes anything; the only data it was for has
   already been upgraded.
 - The public history starts here. Earlier history is kept privately.
+- `INSTALL.md`: step-by-step install instructions for people downloading from GitHub (added after
+  the release; the app is unchanged).
 
 ## 3.0.2
 

@@ -1,5 +1,7 @@
 # Ledger
 
+> **Just want to use it?** See **[How to install Ledger](INSTALL.md)**: download the installer from [Releases](https://github.com/CH-177/ledger/releases/latest), run it, and click *More info → Run anyway* if Windows warns you.
+
 A calm, local-first personal finance app for Windows. Built with WinUI 3, the Windows App SDK, .NET 10, SQLite and EF Core.
 
 Your data lives only on this PC, in `%LOCALAPPDATA%\Ledger` (or, for the portable copy, a `Data` folder beside `Ledger.exe`).
