@@ -150,6 +150,31 @@
             </StackPanel>
 
             <StackPanel Spacing="10">
+                <TextBlock Text="Grokbot" Style="{StaticResource LedgerSectionTitleStyle}"
+                           AutomationProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource LedgerCardStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource LedgerSecondaryStyle}" TextWrapping="Wrap"
+                                   Text="Lets an external Grokbot (or Cursor MCP) read and propose changes to your Ledger data on this PC. The API listens only on localhost. Reads run immediately; writes wait for Approve in the sidebar." />
+                        <ToggleSwitch Header="Grokbot access" IsOn="{x:Bind ViewModel.GrokbotEnabled, Mode=TwoWay}" />
+                        <TextBox Header="Port" Text="{x:Bind ViewModel.GrokbotPortText, Mode=TwoWay}" Width="120" HorizontalAlignment="Left" />
+                        <TextBlock Text="{x:Bind ViewModel.GrokbotStatus, Mode=OneWay}" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" />
+                        <TextBlock Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap"
+                                   Text="{x:Bind ViewModel.GrokbotTokenPreview, Mode=OneWay}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Generate token" Command="{x:Bind ViewModel.GenerateTokenCommand}" />
+                            <Button Content="Copy token" Command="{x:Bind ViewModel.CopyTokenCommand}" />
+                            <Button Content="Copy MCP config" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.CopyMcpConfigCommand}" />
+                        </StackPanel>
+                        <TextBlock Text="{x:Bind ViewModel.GrokbotMessage, Mode=OneWay}" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap"
+                                   AutomationProperties.LiveSetting="Polite" />
+                        <TextBlock Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap"
+                                   Text="The token is encrypted for your Windows account on this PC, outside your Ledger data. Bank import, reconciliation, backup and restore stay in the app — not exposed to Grokbot." />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Spacing="10">
                 <TextBlock Text="Data" Style="{StaticResource LedgerSectionTitleStyle}"
                            AutomationProperties.HeadingLevel="Level2" />
                 <Border Style="{StaticResource LedgerCardStyle}">

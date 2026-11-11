@@ -29,6 +29,7 @@ public sealed partial class SettingsPage : Page
 
     private void OnMessageClosed(InfoBar sender, InfoBarClosedEventArgs args) => Data.Message = null;
     private void OnOpenDataFolderClick(object sender, RoutedEventArgs e) => Data.OpenDataFolder();
+
     private void OnOpenBackupsFolderClick(object sender, RoutedEventArgs e) => Data.OpenBackupsFolder();
     private async void OnBackUpClick(object sender, RoutedEventArgs e) => await Data.BackUpNowAsync();
     private async void OnExportCsvClick(object sender, RoutedEventArgs e) => await Data.ExportCsvAsync();

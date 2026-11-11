@@ -3,6 +3,18 @@
 Versions are `MAJOR.MINOR.PATCH`. Each phase or feature bumps MINOR; small fixes bump PATCH.
 The version lives in `Directory.Build.props` and is shown in Settings → About.
 
+## 3.2.0
+
+- **Grokbot bridge** (Settings → Grokbot): a localhost-only HTTP API and MCP stdio bridge so an
+  external Grokbot can read Ledger and propose edits while the app is running.
+  - Reads use the same FinanceTools as before (overview, budget, spending, transactions, forecast,
+    bills, paychecks, goals, affordability, what-ifs, plus account/category/job id lists).
+  - Writes are propose_* tools that enqueue a confirmation in the sidebar; nothing is saved until
+    you Approve. Deny discards the proposal. Bank import, reconcile, backup and restore stay in-app.
+  - Off by default. Loopback only (`127.0.0.1`), bearer token encrypted with DPAPI in `grokbot.token`.
+  - `Ledger.Mcp` speaks MCP over stdio; Settings can copy a Cursor MCP config.
+- **Ask / Claude removed.** The in-app Anthropic assistant is gone; use Grokbot instead.
+
 ## 3.0.3
 
 First public release on GitHub.

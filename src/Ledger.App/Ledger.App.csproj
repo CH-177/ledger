@@ -74,6 +74,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
   </ItemGroup>
 
   <ItemGroup>
@@ -83,7 +84,21 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ledger.Core\Ledger.Core.csproj" />
+    <ProjectReference Include="..\Ledger.Mcp\Ledger.Mcp.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
+
+  <!-- Ship Ledger.Mcp.exe beside Ledger so Settings → Copy MCP config works. -->
+  <Target Name="CopyLedgerMcp" AfterTargets="Build">
+    <MSBuild Projects="..\Ledger.Mcp\Ledger.Mcp.csproj" Targets="Build"
+             Properties="Configuration=$(Configuration);TargetFramework=net10.0" />
+    <ItemGroup>
+      <_McpOut Include="..\Ledger.Mcp\bin\$(Configuration)\net10.0\Ledger.Mcp*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_McpOut)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
 
   <!--
     Publish only what an English, non-debugged install needs:

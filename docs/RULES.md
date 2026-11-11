@@ -283,6 +283,23 @@ the app, or a port to another platform (see `PORTABILITY.md`), has to keep them 
   balance never goes below zero (or the cushion); otherwise it says when and how low.
   *(…A_purchase_scenario_changes_only_the_scenario_forecast_and_can_i_afford_it_says_so_plainly)*
 
+## Grokbot bridge
+
+- **Reads run immediately.** The localhost tools (`Ledger.Core/Assistant/FinanceTools.cs`) call the
+  same services the pages use and none that write; running every one leaves the database unchanged.
+  *(InvariantTests.Assistant_tools_answer_every_question_and_never_change_stored_data)*
+- **Same numbers as the pages:** Available is the forecast's starting balance, the budget is the
+  Budget page's month, and "Can I afford this?" is ScenarioService's answer word for word.
+  *(InvariantTests.Assistant_tools_give_the_same_numbers_as_the_pages_and_readable_errors)*
+- **Writes are proposals.** `MutationTools` parses a propose_* tool into a payload without writing;
+  only Approve in Ledger runs Apply. *(InvariantTests.Mutation_parse_never_changes_stored_data_and_apply_matches_a_direct_write)*
+- **Local only:** the API listens on `127.0.0.1` (never all interfaces), requires a bearer token, and
+  is off until Settings → Grokbot turns it on. The token is encrypted with Windows DPAPI for the
+  current user in `grokbot.token` beside the database, so backups and exports never contain it.
+- **Not exposed:** bank file import, statement reconciliation, backup and restore stay in the app UI.
+- Bad tool input (an unknown account or category, a malformed date) comes back as a readable JSON
+  error, never an unhandled exception.
+
 ## Suggestions
 
 - **Suggestions never save anything.** They fill fields you can see, or offer choices; only Save

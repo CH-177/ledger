@@ -26,6 +26,12 @@ public static class SettingKeys
 
     /// <summary>Saved what-if scenarios (their assumptions only), as JSON.</summary>
     public const string Scenarios = "Planning.Scenarios";
+
+    /// <summary>"1" turns on the localhost Grokbot API; anything else (or nothing) leaves it off.</summary>
+    public const string GrokbotEnabled = "Grokbot.Enabled";
+
+    /// <summary>Loopback port for the Grokbot API (default 17865).</summary>
+    public const string GrokbotPort = "Grokbot.Port";
 }
 
 /// <summary>

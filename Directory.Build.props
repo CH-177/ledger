@@ -7,9 +7,9 @@
     <!-- CS1591: missing XML docs. Docs are required on important public services, not every member. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <!-- MAJOR.MINOR.PATCH: minor for each phase or feature, patch for small fixes. See CHANGELOG.md. -->
-    <Version>3.0.3</Version>
+    <Version>3.2.0</Version>
     <!-- What the app shows (Settings → About). May carry a letter, e.g. 1.5.1a; Version must stay numeric. -->
-    <InformationalVersion>3.0.3</InformationalVersion>
+    <InformationalVersion>3.2.0</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Company>Ledger</Company>
     <Product>Ledger</Product>

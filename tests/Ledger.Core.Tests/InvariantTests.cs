@@ -132,6 +132,123 @@ public class InvariantTests
         return sb.ToString();
     }
 
+    private static Ledger.Core.Assistant.FinanceTools ToolsFor(World w) => new(
+        w.Accounts, w.Transactions, w.Budgets, w.Dashboard, w.Forecasts, w.Recurring, w.Paychecks, w.Income, w.Goals,
+        new ScenarioService(w.Forecasts, w.Goals, new SettingsService(w.Db.Factory)), new CategoryService(w.Db.Factory), w.Db.Time);
+
+    private static System.Text.Json.JsonElement Input(string json) => System.Text.Json.JsonDocument.Parse(json).RootElement;
+
+    [Fact]
+    public async Task Assistant_tools_answer_every_question_and_never_change_stored_data()
+    {
+        await using var w = await World.CreateAsync();
+        await w.PopulateAsync();
+        var tools = ToolsFor(w);
+        var before = await SnapshotAsync(w.Db);
+
+        var calls = new (string Name, string Input)[]
+        {
+            ("get_overview", "{}"),
+            ("get_budget", """{"month":"2026-09"}"""),
+            ("get_spending_history", """{"months":3}"""),
+            ("search_transactions", """{"kind":"spending","category":"Groceries","from":"2026-09-01"}"""),
+            ("get_upcoming", """{"days":60}"""),
+            ("get_recurring", "{}"),
+            ("get_paycheck_estimates", "{}"),
+            ("get_goals", "{}"),
+            ("can_i_afford", """{"amount":400,"date":"2026-10-05","cushion":50}"""),
+            ("what_if", """{"days":60,"changes":[{"kind":"purchase","amount":300},{"kind":"weekly_hours","weekly_hours":25},{"kind":"pay_rate","amount":15},{"kind":"stop_recurring","name":"insurance"},{"kind":"new_bill","amount":12.99,"frequency":"monthly","name":"Streaming"}]}"""),
+            ("list_accounts", "{}"),
+            ("list_categories", "{}"),
+            ("list_jobs", "{}"),
+        };
+        Assert.Equal(Ledger.Core.Assistant.FinanceTools.Definitions.Select(d => d.Name).Order(), calls.Select(c => c.Name).Order());
+        foreach (var (name, input) in calls)
+        {
+            var result = System.Text.Json.JsonDocument.Parse(await tools.RunAsync(name, Input(input))).RootElement;
+            Assert.False(result.TryGetProperty("error", out var error), $"{name}: {error}");
+        }
+
+        Assert.Equal(before, await SnapshotAsync(w.Db));
+    }
+
+    [Fact]
+    public async Task Assistant_tools_give_the_same_numbers_as_the_pages_and_readable_errors()
+    {
+        await using var w = await World.CreateAsync();
+        await w.PopulateAsync();
+        var tools = ToolsFor(w);
+        async Task<System.Text.Json.JsonElement> Run(string name, string input) =>
+            System.Text.Json.JsonDocument.Parse(await tools.RunAsync(name, Input(input))).RootElement;
+
+        var overview = await Run("get_overview", "{}");
+        var forecast = await w.Forecasts.GetForecastAsync(Today, 14);
+        Assert.Equal(forecast.StartingBalanceCents / 100m, overview.GetProperty("available").GetDecimal());
+        Assert.Equal(3, overview.GetProperty("accounts").GetArrayLength());
+
+        var budget = await Run("get_budget", """{"month":"2026-09"}""");
+        var plan = await w.Budgets.GetMonthAsync(2026, 9);
+        Assert.Equal(plan.PlannedCents / 100m, budget.GetProperty("planned_total").GetDecimal());
+        Assert.Equal(plan.ActualCents / 100m, budget.GetProperty("spent_total").GetDecimal());
+
+        var afford = await Run("can_i_afford", """{"amount":1200,"date":"2026-10-27","cushion":50}""");
+        var expected = await new ScenarioService(w.Forecasts, w.Goals, new SettingsService(w.Db.Factory))
+            .CanIAffordAsync(Today, 120000, new DateOnly(2026, 10, 27), w.Checking.Id, 5000);
+        Assert.Equal(expected.Affordable, afford.GetProperty("affordable").GetBoolean());
+        Assert.Equal(expected.Answer, afford.GetProperty("answer").GetString());
+
+        // Deleted transactions stay hidden; the deleted $999.99 grocery run isn't there.
+        var groceries = await Run("search_transactions", """{"category":"Groceries"}""");
+        Assert.DoesNotContain(groceries.GetProperty("transactions").EnumerateArray(), t => t.GetProperty("amount").GetDecimal() == 999.99m);
+
+        // Mistakes come back as messages the assistant can act on, never as exceptions.
+        Assert.Contains("Accounts: ", (await Run("can_i_afford", """{"amount":5,"account":"Nope"}""")).GetProperty("error").GetString());
+        Assert.Contains("2026-10-15", (await Run("search_transactions", """{"from":"Oct 1"}""")).GetProperty("error").GetString());
+        Assert.True((await Run("no_such_tool", "{}")).TryGetProperty("error", out _));
+        Assert.True((await Run("what_if", """{"changes":[]}""")).TryGetProperty("error", out _));
+        Assert.True((await Run("get_budget", """{"month":"September"}""")).TryGetProperty("error", out _));
+    }
+
+    [Fact]
+    public void Assistant_tool_definitions_are_unique_valid_object_schemas()
+    {
+        var defs = Ledger.Core.Assistant.FinanceTools.Definitions
+            .Concat(Ledger.Core.Assistant.MutationTools.Definitions).ToList();
+        Assert.Equal(defs.Count, defs.Select(d => d.Name).Distinct().Count());
+        foreach (var d in defs)
+        {
+            var schema = System.Text.Json.JsonDocument.Parse(d.InputSchemaJson).RootElement;
+            Assert.Equal("object", schema.GetProperty("type").GetString());
+            Assert.True(schema.TryGetProperty("properties", out _), d.Name);
+            Assert.False(string.IsNullOrWhiteSpace(d.Description));
+        }
+    }
+
+    private static Ledger.Core.Assistant.MutationTools MutationsFor(World w) => new(
+        w.Transactions, w.Accounts, new CategoryService(w.Db.Factory), w.Budgets, w.Recurring, w.Goals,
+        w.Income, new DeductionService(w.Db.Factory), new PaystubService(w.Db.Factory), w.Db.Time);
+
+    [Fact]
+    public async Task Mutation_parse_never_changes_stored_data_and_apply_matches_a_direct_write()
+    {
+        await using var w = await World.CreateAsync();
+        await w.PopulateAsync();
+        var mutations = MutationsFor(w);
+        var before = await SnapshotAsync(w.Db);
+
+        var parsed = await mutations.ParseAsync("propose_create_transaction", Input(
+            """{"kind":"spending","amount":12.34,"account":"Checking","category":"Groceries","payee":"Grokbot"}"""));
+        Assert.Equal(Ledger.Core.Assistant.MutationKind.CreateTransaction, parsed.Kind);
+        Assert.Equal(before, await SnapshotAsync(w.Db));
+
+        var result = System.Text.Json.JsonDocument.Parse(await mutations.ApplyAsync(parsed.Kind, parsed.PayloadJson)).RootElement;
+        Assert.True(result.GetProperty("ok").GetBoolean());
+        var id = result.GetProperty("id").GetInt32();
+
+        var list = await w.Transactions.QueryAsync(new TransactionQuery(Search: "Grokbot"));
+        Assert.Contains(list, t => t.Id == id && t.AmountCents == 1234 && t.Payee == "Grokbot");
+    }
+
     [Fact]
     public async Task Forecasts_reports_and_every_other_read_never_change_stored_data()
     {

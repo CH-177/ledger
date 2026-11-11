@@ -26,15 +26,17 @@ public sealed partial class MainWindow : Window
     private readonly NavigationService _navigation;
     private readonly ThemeService _themes;
     private readonly WelcomeTour _tour;
+    private readonly ProposalService _proposals;
 
     public ShellViewModel ViewModel { get; }
 
-    public MainWindow(ShellViewModel viewModel, NavigationService navigation, ThemeService themes, DialogService dialogs, WelcomeTour tour)
+    public MainWindow(ShellViewModel viewModel, NavigationService navigation, ThemeService themes, DialogService dialogs, WelcomeTour tour, ProposalService proposals)
     {
         ViewModel = viewModel;
         _navigation = navigation;
         _themes = themes;
         _tour = tour;
+        _proposals = proposals;
         InitializeComponent();
 
         ConfigureWindow();
@@ -46,6 +48,8 @@ public sealed partial class MainWindow : Window
         RootGrid.Loaded += async (_, _) => await StartAsync();
         _tour.Changed += OnTourChanged;
         _themes.SideArtChanged += (_, _) => UpdateSideArt();
+        _proposals.Changed += (_, _) => DispatcherQueue.TryEnqueue(UpdateProposalBanner);
+        UpdateProposalBanner();
 
         // F1 anywhere: Help, opened at the topic for the page on screen.
         var help = new KeyboardAccelerator { Key = VirtualKey.F1 };
@@ -148,11 +152,63 @@ public sealed partial class MainWindow : Window
 
         _navigation.Navigate(AppPage.Overview);
 
+        try
+        {
+            await App.Services.GetRequiredService<GrokbotApiHost>().SyncFromSettingsAsync();
+        }
+        catch (Exception)
+        {
+            // Settings can turn it on again; a failed auto-start must not block the app.
+        }
+
         // Offered once: on the first launch of a version with the tour, for people who set up before it.
         if (!await _tour.HasBeenSeenAsync())
         {
             _tour.Start();
         }
+    }
+
+    // ---- Grokbot proposals ------------------------------------------------------------------
+
+    private void UpdateProposalBanner()
+    {
+        var current = _proposals.Current;
+        if (current is null)
+        {
+            ProposalBanner.Visibility = Visibility.Collapsed;
+            return;
+        }
+        ProposalBanner.Visibility = Visibility.Visible;
+        ProposalTitle.Text = "Grokbot wants to change Ledger";
+        ProposalSummary.Text = current.Summary;
+        var extra = _proposals.PendingCount - 1;
+        ProposalCount.Text = extra > 0 ? $"+{extra} more waiting" : "";
+    }
+
+    private async void OnProposalApproveClick(object sender, RoutedEventArgs e)
+    {
+        if (_proposals.Current is not { } current)
+        {
+            return;
+        }
+        try
+        {
+            await _proposals.ApproveAsync(current.Id);
+        }
+        catch (Exception ex)
+        {
+            ProposalSummary.Text = ex.Message;
+        }
+        UpdateProposalBanner();
+    }
+
+    private void OnProposalDenyClick(object sender, RoutedEventArgs e)
+    {
+        if (_proposals.Current is { } current)
+        {
+            _proposals.Deny(current.Id);
+        }
+        UpdateProposalBanner();
     }
 
     // ---- Side art -------------------------------------------------------------------------------

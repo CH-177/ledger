@@ -4,9 +4,9 @@
 
 A calm, local-first personal finance app for Windows. Built with WinUI 3, the Windows App SDK, .NET 10, SQLite and EF Core.
 
-Your data lives only on this PC, in `%LOCALAPPDATA%\Ledger` (or, for the portable copy, a `Data` folder beside `Ledger.exe`).
+Your data lives only on this PC (unless you turn on the optional Grokbot bridge), in `%LOCALAPPDATA%\Ledger` (or, for the portable copy, a `Data` folder beside `Ledger.exe`).
 
-**Status: 3.0.0.** V1 (1.9.0) and V2 (2.9.9) are complete; 3.0.0 adds a welcome tour, built-in Help and a shareable Windows installer. See the [changelog](CHANGELOG.md).
+**Status: 3.2.0.** Local-first personal finance for Windows, with an optional localhost Grokbot bridge. See the [changelog](CHANGELOG.md).
 
 ## What it does
 
@@ -21,6 +21,7 @@ Your data lives only on this PC, in `%LOCALAPPDATA%\Ledger` (or, for the portabl
 - **Sinking funds and What if?:** money set aside for known costs, "Can I afford this?" and scenarios.
 - **Data:** backups (automatic and manual), restore, and CSV and JSON export. No account, no cloud.
 - **Help:** a welcome tour and searchable Help (F1 on any page).
+- **Grokbot (optional):** a localhost-only HTTP API (and MCP bridge) so an external Grokbot can read your numbers and propose edits. Writes wait for Approve in Ledger. Off until you turn it on in Settings; nothing leaves this PC.
 
 ## Layout
 

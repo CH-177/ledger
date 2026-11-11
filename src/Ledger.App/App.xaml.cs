@@ -1,6 +1,7 @@
 using Ledger.App.Infrastructure;
 using Ledger.App.Services;
 using Ledger.App.ViewModels;
+using Ledger.Core.Assistant;
 using Ledger.Core.Data;
 using Ledger.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -48,8 +49,16 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            // Data is still safe in the log; it is recovered at the next launch.
             _logger.LogWarning(ex, "Checkpoint on close failed");
+        }
+
+        try
+        {
+            Services.GetRequiredService<GrokbotApiHost>().StopAsync(persistOff: false).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Stopping Grokbot API on close failed");
         }
     }
 
@@ -90,6 +99,8 @@ public partial class App : Application
         services.AddSingleton<Ledger.Core.Import.ImportService>();
         services.AddSingleton<BackupService>();
         services.AddSingleton<ExportService>();
+        services.AddSingleton<FinanceTools>();
+        services.AddSingleton<MutationTools>();
 
         // App services
         services.AddSingleton<NavigationService>();
@@ -97,6 +108,9 @@ public partial class App : Application
         services.AddSingleton<DialogService>();
         services.AddSingleton<AutoRecordService>();
         services.AddSingleton<WelcomeTour>();
+        services.AddSingleton<GrokbotTokenStore>();
+        services.AddSingleton<ProposalService>();
+        services.AddSingleton<GrokbotApiHost>();
         services.AddSingleton(sp => new FilePickerService(() => sp.GetRequiredService<MainWindow>()));
 
         // View models
@@ -136,7 +150,6 @@ public partial class App : Application
 
     private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
-        // Record the technical details locally; the exception message is not shown to the user.
         _logger.LogCritical(e.Exception, "Unhandled exception");
     }
 }

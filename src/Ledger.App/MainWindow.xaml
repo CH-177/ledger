@@ -72,6 +72,22 @@
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
+            <!-- Grokbot write proposals waiting for Approve/Deny. -->
+            <NavigationView.PaneFooter>
+                <Border x:Name="ProposalBanner" Margin="12,0,12,12" Padding="12" CornerRadius="8"
+                        Background="{ThemeResource LedgerSurfaceBrush}" Visibility="Collapsed">
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Name="ProposalTitle" Style="{StaticResource LedgerBodyStyle}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock x:Name="ProposalSummary" Style="{StaticResource LedgerCaptionStyle}" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button x:Name="ProposalApprove" Content="Approve" Style="{StaticResource AccentButtonStyle}" Click="OnProposalApproveClick" />
+                            <Button x:Name="ProposalDeny" Content="Deny" Click="OnProposalDenyClick" />
+                            <TextBlock x:Name="ProposalCount" Style="{StaticResource LedgerCaptionStyle}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </NavigationView.PaneFooter>
+
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem Content="Reports" Tag="Reports">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xE9D2;" /></NavigationViewItem.Icon>

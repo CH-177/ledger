@@ -1,4 +1,4 @@
-<#
+﻿<#
     Shared by install.ps1 and package.ps1: one Release build in artifacts\publish, rebuilt only when
     the source has changed since it was made.
 
@@ -52,6 +52,11 @@ function Publish-Ledger([string]$repo, [switch]$Force) {
     dotnet publish (Join-Path $repo 'src\Ledger.App\Ledger.App.csproj') `
         -c Release -p:Platform=x64 -r win-x64 --self-contained true -o $out -nologo -v q | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'Publish failed.' }
+    # MCP bridge beside Ledger.exe so Settings → Copy MCP config points at a real binary.
+    Write-Host 'Publishing Ledger.Mcp beside the app...'
+    dotnet publish (Join-Path $repo 'src\Ledger.Mcp\Ledger.Mcp.csproj') `
+        -c Release -r win-x64 --self-contained true -o $out -nologo -v q | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw 'Publish of Ledger.Mcp failed.' }
     if ($stamp) { Set-Content $stampFile $stamp -Encoding ascii }
     return $out
 }

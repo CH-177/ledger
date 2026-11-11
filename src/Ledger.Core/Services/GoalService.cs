@@ -43,6 +43,7 @@ public sealed class GoalService(IDbContextFactory<LedgerDbContext> contextFactor
         await using var db = await contextFactory.CreateDbContextAsync(ct);
         var goals = await db.Goals.AsNoTracking()
             .Include(g => g.Account)
+            .Include(g => g.Category)
             .Where(g => includeArchived || !g.IsArchived)
             .OrderBy(g => g.IsArchived).ThenBy(g => g.SortOrder).ThenBy(g => g.Name)
             .ToListAsync(ct);

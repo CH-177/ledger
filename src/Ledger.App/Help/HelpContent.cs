@@ -201,6 +201,17 @@ public static class HelpContent
             B("Make it real… opens the normal editor filled in. Only pressing Save there creates anything."),
         ], Page: AppPage.Plan, Related: ["forecast"], Keywords: "scenario afford purchase plan simulate hours raise"),
 
+        new("grokbot", Pages, "Grokbot", "Let an external Grokbot read Ledger and propose changes on this PC.", "\uE8BD",
+        [
+            P("Grokbot access is optional. When it's on, Ledger listens only on this PC (127.0.0.1) so a Grokbot or Cursor MCP bridge can call tools while the app is running."),
+            B("Reads run immediately: overview, budget, spending, transactions, bills, paychecks, goals, affordability and what-ifs — the same calculations as the pages."),
+            B("Writes become proposals. Ledger shows them in the sidebar; Approve applies the change, Deny discards it. Nothing is saved until you Approve."),
+            B("Bank import, statement reconciliation, backup and restore stay in the app — they aren't exposed to Grokbot."),
+            H("Setting it up"),
+            P("Open Settings → Grokbot, turn on access, generate a token, and Copy MCP config into Cursor (or call the HTTP API with Authorization: Bearer …). Ledger must stay open."),
+            Warn("The API never leaves this PC, but anything with the token can read your finances and propose edits. Keep the token private; turn access off when you don't need it."),
+        ], Page: AppPage.Settings, Related: ["plan", "budget", "privacy"], Keywords: "grokbot mcp api localhost agent cursor propose approve"),
+
         new("accounts", Pages, "Accounts", "Your bank accounts, cash and cards, and net worth.", "\uE8C7",
         [
             P("Each account's balance is its starting balance plus everything recorded since. Net worth is what you own minus what you owe on cards and loans, for accounts marked \"Include in net worth\"."),
@@ -231,9 +242,10 @@ public static class HelpContent
             B("Categories: Manage categories to add, rename, group or archive."),
             B("Suggestions: turn off spotting repeating payments."),
             B("Paycheck taxes: where you live, for paycheck estimates."),
+            B("Grokbot: localhost API and MCP config for an external agent (see \"Grokbot\")."),
             B("Data: backups, restore and export. See \"Backups and restore\"."),
             B("About: the version you're running, and the welcome tour."),
-        ], Page: AppPage.Settings, Related: ["backups", "paycheck-taxes", "categories"], Keywords: "theme dark light colour options preferences"),
+        ], Page: AppPage.Settings, Related: ["backups", "paycheck-taxes", "categories", "grokbot"], Keywords: "theme dark light colour options preferences"),
 
         // ---- How the numbers work -------------------------------------------------------------
 
@@ -313,7 +325,7 @@ public static class HelpContent
 
         new("privacy", YourData, "Where your data lives", "On this PC, in one file, and nowhere else.", "\uE72E",
         [
-            P("Everything is stored in your Windows user folder (Settings → Data shows exactly where). Ledger has no account, no cloud and no tracking, and never connects to the internet."),
+            P("Everything is stored in your Windows user folder (Settings → Data shows exactly where). Ledger has no account, no cloud and no tracking, and doesn't connect to the internet. The optional Grokbot bridge (see \"Grokbot\") listens only on this PC so a local agent can read and propose edits; nothing is sent to a cloud AI by Ledger itself."),
             B("Other people who use this PC with their own Windows account have their own separate Ledger data."),
             B("Uninstalling Ledger leaves your data in place, so reinstalling picks up where you left off."),
             B("The portable copy (from the portable zip) keeps its data in a Data folder beside Ledger.exe instead, so it can travel on a USB stick. Keep the folder together."),
